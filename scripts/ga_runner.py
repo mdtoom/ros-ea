@@ -24,31 +24,43 @@ class ROSRobotExperiment(SingleExperiment):
         self.retrieved_scores = {}      # This variable is used to keep the retrieved scores of the ROS node.
         self.genome_publisher = rospy.Publisher('genome_topic', NEATGenome, queue_size=100)
         self.condition_lock = Condition()
+        self.generation = 0
         rospy.init_node('evolutionary_algorithm', anonymous=True)
         rospy.Subscriber('score_topic', Score, self.score_callback)
 
-    def eval_genomes(self, genomes, config):
+    def send_genomes(self, genomes):
+        """ This function resends the genomes, which have not yet replied. """
 
-        start_time = time.time()
-
-        self.retrieved_scores = {}      # reset the list with retrieved scores.
-
-        # Publish the genomes to the genome topic.
+        # TODO: make sure that replied does not contain replies from previous iteration.
         for genome_id, genome in genomes:
 
-            ros_encoded_genome = self.genome_encoder_func(genome)
-            self.genome_publisher.publish(ros_encoded_genome)
-            # time.sleep(1)
+            assert genome_id == genome.key      # Safety check, so both can be used as keys.
+            if genome_id not in self.retrieved_scores:
 
-        print('published all information.')
+                ros_encoded_genome = self.genome_encoder_func(genome, self.generation)
+                self.genome_publisher.publish(ros_encoded_genome)
+
+    def eval_genomes(self, genomes, config):
+        start_time = time.time()
+
+        self.generation += 1            # Used to ensure that messages from a previous run are ignored.
+        self.retrieved_scores = {}      # reset the list with retrieved scores.
+        self.send_genomes(genomes)
 
         # Wait until all scores came back.
         self.condition_lock.acquire()
+
+        previous_received = 0
         while len(self.retrieved_scores) != len(genomes):
 
-            print(len(self.retrieved_scores))
-            self.condition_lock.wait(1.0)
-            print('stuck in loop, waiting for others.')
+            self.condition_lock.wait(2.0)
+
+            if previous_received == len(self.retrieved_scores):
+                print('Did not received new scores, got %s so far', previous_received)
+                print('Resending missing genomes')
+                self.send_genomes(genomes)
+
+            previous_received = len(self.retrieved_scores)
 
             if rospy.is_shutdown():
                 raise rospy.ROSInterruptException()
@@ -65,12 +77,14 @@ class ROSRobotExperiment(SingleExperiment):
 
         print("generation total_runtime: %s seconds, avg_runtime: %s seconds" % (time_diff, avg_time))
 
-
     def score_callback(self, data):
         # Put the retrieved score in a list and notify (trough the condition) that a new score has arrived.
-        self.condition_lock.acquire(True)
-        self.retrieved_scores[data.key] = data.score
-        self.condition_lock.release()
+
+        if self.generation == data.generation:      # Ignore messages from a different generation.
+            self.retrieved_scores[data.key] = data.score
+            self.condition_lock.acquire(True)
+            self.condition_lock.notify()
+            self.condition_lock.release()
 
 
 experiment_name = 'NEAT'
