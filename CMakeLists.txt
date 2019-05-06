@@ -55,6 +55,12 @@ find_package(catkin REQUIRED COMPONENTS
    NNode.msg
    NEATGenome.msg
    Score.msg
+   Proximity.msg
+   ProximityList.msg
+   Puck.msg
+   PuckList.msg
+   Light.msg
+   LightList.msg
  )
 
 ## Generate services in the 'srv' folder
@@ -116,6 +122,9 @@ catkin_package(
 ###########
 ## Build ##
 ###########
+
+# Added for ARGoS
+add_subdirectory(plugin)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
