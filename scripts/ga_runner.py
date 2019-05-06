@@ -88,10 +88,8 @@ class ROSRobotExperiment(SingleExperiment):
 
 
 experiment_name = 'NEAT'
-num_steps = 150
 num_generations = 100
 num_runs = 5
-num_trials = 1
 
 
 if __name__ == '__main__':
@@ -108,7 +106,7 @@ if __name__ == '__main__':
     # Create and run experiment.
 
     try:
-        experiment = ROSRobotExperiment(config, '', num_generations, encode_neat_genome, experiment_name)
+        experiment = ROSRobotExperiment(config, None, num_generations, encode_neat_genome, experiment_name)
 
         for i in range(num_runs):
             experiment.run(experiment_name + str(i))

@@ -5,6 +5,7 @@
 #include "ma_evolution/ProximityList.h"
 #include "ma_evolution/Light.h"
 #include "ma_evolution/LightList.h"
+#include "beginner_tutorials/AddTwoInts.h"
 
 /* Include the controller definition */
 #include "argos_ros_bot.h"
@@ -39,12 +40,10 @@ CArgosRosBot::CArgosRosBot() :
   m_pcWheels(NULL),
   m_pcProximity(NULL),
   m_pcOmniCam(NULL),
-//  m_pcGripper(NULL),
   stopWithoutSubscriberCount(10),
   stepsSinceCallback(0),
   leftSpeed(0),
   rightSpeed(0)//,
-//  gripping(false)
 {
 }
 
@@ -62,9 +61,7 @@ void CArgosRosBot::Init(TConfigurationNode& t_node) {
   // Create the subscribers
   stringstream cmdVelTopic;//, gripperTopic;
   cmdVelTopic << "/cmd_vel";
-//  gripperTopic << "/" << GetId() << "/gripper";
   cmdVelSub = nodeHandle->subscribe(cmdVelTopic.str(), 1, &CArgosRosBot::cmdVelCallback, this);
-//  gripperSub = nodeHandle->subscribe(gripperTopic.str(), 1, &CArgosRosBot::gripperCallback, this);
 
   // Get sensor/actuator handles
   m_pcWheels = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
@@ -169,7 +166,6 @@ void CArgosRosBot::ControlStep() {
 }
 
 void CArgosRosBot::cmdVelCallback(const geometry_msgs::Twist& twist) {
-  cout << "cmdVelCallback: " << GetId() << endl;
 
   Real v = twist.linear.x;  // Forward speed
   Real w = twist.angular.z; // Rotational speed

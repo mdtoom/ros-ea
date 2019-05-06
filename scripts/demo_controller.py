@@ -14,7 +14,7 @@ from ma_evolution.msg import Proximity
 from ma_evolution.msg import ProximityList
 from ma_evolution.msg import LightList
 from geometry_msgs.msg import Twist
-
+from std_srvs.srv import Empty
 
 class DemoController:
 
@@ -43,10 +43,20 @@ class DemoController:
         print([light.value for light in lightList.lights])
 
         twist = Twist()
+        twist.linear.x = 0.1
         twist.angular.z = 0.5
 
-        self.cmdVelPub.publish(twist)
+        self.time += 1
 
+        if self.time % 100 == 0:
+            print('resetting')
+            rospy.wait_for_service('reset')
+            print('service found')
+
+            reset_simulator = rospy.ServiceProxy('reset', Empty)
+            resp1 = reset_simulator()
+
+        self.cmdVelPub.publish(twist)
 
 
 if __name__ == '__main__':

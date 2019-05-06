@@ -7,6 +7,9 @@
 
 #include "mpga_loop_functions.h"
 
+#include "ros/ros.h"
+#include "std_srvs/Empty.h"
+
 /****************************************/
 /****************************************/
 
@@ -22,10 +25,16 @@ public:
    virtual void Init(TConfigurationNode& t_node);
    virtual void Reset();
 
+   /** This function resets the robot to its original position. */
+   bool ResetRobot(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response);
+
    /* Calculates the performance of the robot in a trial */
    virtual Real Score();
 
 private:
+
+    /** This server keeps the messages for the reset service coming. */
+   ros::ServiceServer m_pcResetService;
 
    /* The initial setup of a trial */
    struct SInitSetup {

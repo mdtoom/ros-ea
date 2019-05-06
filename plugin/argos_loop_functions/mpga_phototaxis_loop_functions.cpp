@@ -1,4 +1,5 @@
 #include "mpga_phototaxis_loop_functions.h"
+#include "../argos_ros_bot/argos_ros_bot.h"
 
 /****************************************/
 /****************************************/
@@ -17,21 +18,25 @@ CMPGAPhototaxisLoopFunctions::~CMPGAPhototaxisLoopFunctions() {
 /****************************************/
 
 void CMPGAPhototaxisLoopFunctions::Init(TConfigurationNode& t_node) {
-   /*
+    /*
     * Create the random number generator
     */
-   m_pcRNG = CRandom::CreateRNG("argos");
+    m_pcRNG = CRandom::CreateRNG("argos");
 
-   /*
+    // Register a reset service at the node of the simulation.
+    m_pcResetService = CArgosRosBot::nodeHandle->
+            advertiseService("reset", &CMPGAPhototaxisLoopFunctions::ResetRobot, this);
+
+    /*
     * Create the foot-bot and get a reference to its controller
     */
-   m_pcFootBot = new CFootBotEntity(
+    m_pcFootBot = new CFootBotEntity(
       "fb",    // entity id
       "argos_ros_bot"    // controller id as set in the XML
       );
-   AddEntity(*m_pcFootBot);
+    AddEntity(*m_pcFootBot);
 
-   /*
+    /*
     * Create the initial setup for each trial
     * The robot is placed 4.5 meters away from the light
     * (which is in the origin) at angles
@@ -55,9 +60,7 @@ void CMPGAPhototaxisLoopFunctions::Init(TConfigurationNode& t_node) {
             CRadians::ZERO  // rotation around X
     );
 
-   LOG << "Running function" << std::endl;
-
-   Reset();
+    Reset();
 }
 
 /****************************************/
@@ -65,23 +68,29 @@ void CMPGAPhototaxisLoopFunctions::Init(TConfigurationNode& t_node) {
 
 void CMPGAPhototaxisLoopFunctions::Reset() {
 
-
-   /*
+    /*
     * Move robot to the initial position corresponding to the current trial
     */
-   if(!MoveEntity(
-         m_pcFootBot->GetEmbodiedEntity(),             // move the body of the robot
-         m_vecResetLocation.Position,    // to this position
-         m_vecResetLocation.Orientation, // with this orientation
-         false                                         // this is not a check, leave the robot there
-         )) {
-      LOGERR << "Can't move robot in <"
-             << m_vecResetLocation.Position
-             << ">, <"
-             << m_vecResetLocation.Orientation
-             << ">"
-             << std::endl;
-   }
+    if(!MoveEntity(
+            m_pcFootBot->GetEmbodiedEntity(),             // move the body of the robot
+            m_vecResetLocation.Position,    // to this position
+            m_vecResetLocation.Orientation, // with this orientation
+            false                                         // this is not a check, leave the robot there
+    )) {
+        LOGERR << "Can't move robot in <"
+               << m_vecResetLocation.Position
+               << ">, <"
+               << m_vecResetLocation.Orientation
+               << ">"
+               << std::endl;
+    }
+}
+
+bool CMPGAPhototaxisLoopFunctions::ResetRobot(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response) {
+
+    Reset();
+    return true;
+
 }
 
 /****************************************/
