@@ -145,6 +145,13 @@ void CArgosRosBot::PublishLight() {
 
 void CArgosRosBot::ControlStep() {
 
+    if (!ros::ok())
+    {
+        LOG << "ROS stopped working" << std::endl;
+        LOG.Flush();
+        exit(0);
+    }
+
 //  PublishPucks();
   PublishProximity();
   PublishLight();
