@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
     try:
         experiment = ROSRobotExperiment(config, None, num_generations, encode_neat_genome, experiment_name,
-                                        base_directory='/home/matthijs/desktop/test/')
+                                        base_directory='/home/matthijs/Desktop/test/')
 
         for i in range(num_runs):
             experiment.run(experiment_name + str(i))

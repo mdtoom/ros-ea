@@ -6,6 +6,8 @@ from Queue import Queue
 import neat
 import rospy
 from examples.experiment_functions import FeedForwardNetworkController
+from neat.activations import ActivationFunctionSet
+from neat.aggregations import AggregationFunctionSet
 from std_srvs.srv import Empty
 from ma_evolution.msg import Score, NEATGenome
 from ma_evolution.msg import Puck
@@ -73,7 +75,6 @@ class ArgosExperimentRunner:
 
             # if the simulation has run for the required number of time steps, reset the current controller.
             if self.time_steps >= self.num_steps:
-                print("Executed a full simulation.")
                 self.current_controller = None
                 score = self.get_score()
 
@@ -114,6 +115,31 @@ class ArgosExperimentRunner:
         self.scorePublisher.publish(score_message)
 
 
+class StandInConfig:
+    """ This class represents a simplified config satisfactory to both the NEAT and SM genome,
+    to create and run genomes """
+
+    def __init__(self, num_inputs, num_outputs):
+
+
+        # Create full set of available activation functions.
+        self.activation_defs = ActivationFunctionSet()
+        # ditto for aggregation functions - name difference for backward compatibility
+        self.aggregation_function_defs = AggregationFunctionSet()
+        self.aggregation_defs = self.aggregation_function_defs
+
+        # By convention, input pins have negative keys, and the output
+        # pins have keys 0,1,...
+        self.input_keys = [-i - 1 for i in range(num_inputs)]
+        self.output_keys = [i for i in range(num_outputs)]
+
+
+class StandInGeneralConfig:
+    """ This class represents a general config required for compatibility with NEAT library."""
+    def __init__(self, num_inputs, num_outputs):
+        self.genome_config = StandInConfig(num_inputs, num_outputs)
+
+
 if __name__ == '__main__':
     # In ROS, nodes are uniquely named. If two nodes with the same
     # name are launched, the previous one is kicked off. The
@@ -122,14 +148,8 @@ if __name__ == '__main__':
     # run simultaneously.
 
     print('Setup started')
-    config_location = 'config-feedforward'
 
-    local_dir = os.path.dirname(__file__)
-    config_path = os.path.join(local_dir, config_location)
-    config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
-                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                         config_path)
-
+    config = StandInGeneralConfig(48, 2)
     exp_runner = ArgosExperimentRunner(150, FeedForwardNetworkController, config)
 
     print('Setup finished')
