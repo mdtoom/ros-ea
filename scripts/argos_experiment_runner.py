@@ -14,6 +14,7 @@ from ma_evolution.msg import Proximity
 from ma_evolution.msg import ProximityList
 from ma_evolution.msg import LightList
 from geometry_msgs.msg import Twist
+from ma_evolution.srv import SimScore
 
 from message_parsing import decode_neat_genome
 
@@ -24,6 +25,7 @@ class ArgosExperimentRunner:
     proximityList = None
     time_steps = 0
     current_controller = None
+    current_genome = None           # Genome is required to send current generation and key.
 
     def __init__(self, num_steps, controller_class, config):
         self.num_steps = num_steps
@@ -42,7 +44,6 @@ class ArgosExperimentRunner:
         rospy.Subscriber('light', LightList, self.light_callback)
 
     def genome_callback(self, data):
-        print('Genome data')
         self.genome_queue.put(data)
 
     def proximity_callback(self, proximityList):
@@ -50,20 +51,16 @@ class ArgosExperimentRunner:
 
     def light_callback(self, lightList):
 
-        print('Executed control loop')
         twist = Twist()
         twist.linear.x = 0  # Forward speed
         twist.angular.z = 0  # Rotational speed
 
         if self.current_controller is not None:
 
-            print('Evaluating Genome')
             # Extract the sensor data.
             proximities = [proximity.value for proximity in self.proximityList.proximities]
             lights = [light.value for light in lightList.lights]
             observation = proximities + lights
-
-            print(len(observation))
 
             # Execute the controller given the data.
             actions = self.current_controller.step(observation)
@@ -78,6 +75,9 @@ class ArgosExperimentRunner:
             if self.time_steps >= self.num_steps:
                 print("Executed a full simulation.")
                 self.current_controller = None
+                score = self.get_score()
+
+                self.publish_score(self.current_genome.key, self.current_genome.generation, score)
 
         # If no genome is running, then set a new available genome to run.
         elif not self.genome_queue.empty():
@@ -85,6 +85,7 @@ class ArgosExperimentRunner:
             genome = decode_neat_genome(encoded_genome)
             self.current_controller = self.controller_class()
             self.current_controller.reset(genome, self.config)
+            self.current_genome = encoded_genome
             self.time_steps = 0
 
             self.reset_simulation()
@@ -98,6 +99,19 @@ class ArgosExperimentRunner:
         rospy.wait_for_service('reset')
         reset_simulator = rospy.ServiceProxy('reset', Empty)
         reset_simulator()
+
+    @staticmethod
+    def get_score():
+        """ This function gets the score from the simulation."""
+        rospy.wait_for_service('score')
+        get_score = rospy.ServiceProxy('score', SimScore)
+        score = get_score()
+        return 10 - score.score
+
+    def publish_score(self, key, generation, score):
+        """ This function publishes the obtained score. """
+        score_message = Score(key, generation, score)
+        self.scorePublisher.publish(score_message)
 
 
 if __name__ == '__main__':
@@ -115,10 +129,8 @@ if __name__ == '__main__':
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_path)
-    print('Config Loaded')
 
     exp_runner = ArgosExperimentRunner(150, FeedForwardNetworkController, config)
-    print('Runner created')
 
     print('Setup finished')
 

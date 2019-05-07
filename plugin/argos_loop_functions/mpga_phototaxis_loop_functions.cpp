@@ -27,6 +27,10 @@ void CMPGAPhototaxisLoopFunctions::Init(TConfigurationNode& t_node) {
     m_pcResetService = CArgosRosBot::nodeHandle->
             advertiseService("reset", &CMPGAPhototaxisLoopFunctions::ResetRobot, this);
 
+    // Register the get score service of the node of the simulation.
+    m_pcScoreService = CArgosRosBot::nodeHandle->
+            advertiseService("score", &CMPGAPhototaxisLoopFunctions::GetScore, this);
+
     /*
     * Create the foot-bot and get a reference to its controller
     */
@@ -91,6 +95,14 @@ bool CMPGAPhototaxisLoopFunctions::ResetRobot(std_srvs::Empty::Request& request,
     Reset();
     return true;
 
+}
+
+bool CMPGAPhototaxisLoopFunctions::GetScore(ma_evolution::SimScore::Request& request,
+        ma_evolution::SimScore::Response& response)
+{
+    Real score = Score();
+    response.score = (float) score;
+    return true;
 }
 
 /****************************************/

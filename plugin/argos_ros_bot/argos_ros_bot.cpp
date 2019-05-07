@@ -69,8 +69,6 @@ void CArgosRosBot::Init(TConfigurationNode& t_node) {
   m_pcOmniCam = GetSensor<CCI_ColoredBlobOmnidirectionalCameraSensor>("colored_blob_omnidirectional_camera");
   m_pcLight = GetSensor<CCI_FootBotLightSensor>("footbot_light");
 
-  // m_pcOmniCam->Enable();
-
   /*
    * Parse the configuration file
    *

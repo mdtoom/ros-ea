@@ -52,7 +52,6 @@ if __name__ == '__main__':
     num_steps = 150
     config_location = 'config-feedforward'
 
-
     local_dir = os.path.dirname(__file__)
     config_path = os.path.join(local_dir, config_location)
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,

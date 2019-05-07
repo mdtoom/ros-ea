@@ -53,7 +53,7 @@ class ROSRobotExperiment(SingleExperiment):
         previous_received = 0
         while len(self.retrieved_scores) != len(genomes):
 
-            self.condition_lock.wait(20.0)
+            self.condition_lock.wait(10.0)
 
             if previous_received == len(self.retrieved_scores):
                 print('Did not received new scores, got %s so far', previous_received)
@@ -79,12 +79,13 @@ class ROSRobotExperiment(SingleExperiment):
 
     def score_callback(self, data):
         # Put the retrieved score in a list and notify (trough the condition) that a new score has arrived.
-
         if self.generation == data.generation:      # Ignore messages from a different generation.
             self.retrieved_scores[data.key] = data.score
             self.condition_lock.acquire(True)
             self.condition_lock.notify()
             self.condition_lock.release()
+
+            print('Got score {0} for controller {1}'.format(data.score, data.key))
 
 
 experiment_name = 'NEAT'
@@ -106,7 +107,8 @@ if __name__ == '__main__':
     # Create and run experiment.
 
     try:
-        experiment = ROSRobotExperiment(config, None, num_generations, encode_neat_genome, experiment_name)
+        experiment = ROSRobotExperiment(config, None, num_generations, encode_neat_genome, experiment_name,
+                                        base_directory='/home/matthijs/desktop/test/')
 
         for i in range(num_runs):
             experiment.run(experiment_name + str(i))
