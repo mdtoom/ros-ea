@@ -53,7 +53,7 @@ class ROSRobotExperiment(SingleExperiment):
         previous_received = 0
         while len(self.retrieved_scores) != len(genomes):
 
-            self.condition_lock.wait(2.0)
+            self.condition_lock.wait(20.0)
 
             if previous_received == len(self.retrieved_scores):
                 print('Did not received new scores, got %s so far', previous_received)

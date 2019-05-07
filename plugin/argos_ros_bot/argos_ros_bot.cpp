@@ -147,7 +147,7 @@ void CArgosRosBot::PublishLight() {
 
 void CArgosRosBot::ControlStep() {
 
-  PublishPucks();
+//  PublishPucks();
   PublishProximity();
   PublishLight();
 

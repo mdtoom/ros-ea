@@ -20,7 +20,6 @@ class DemoController:
 
     cmdVelPub = None
     puckList = None
-    state = "WANDER"
     time = 0
     stateStartTime = 0
     lastTwist = None
