@@ -82,5 +82,3 @@ class ROSRobotExperiment(SingleExperiment):
             self.condition_lock.acquire(True)
             self.condition_lock.notify()
             self.condition_lock.release()
-
-            print('Got score {0} for controller {1}'.format(data.score, data.key))

@@ -25,7 +25,7 @@ class ArgosExperimentRunner:
         self.proximityList = None
         self.time_steps = 0
         self.current_controller = None
-        self.current_genome = None           # Genome is required to send current generation and key.
+        self.current_genome = None
         self.genome_sub = None
         self.genome_queue = Queue()
 
@@ -53,6 +53,14 @@ class ArgosExperimentRunner:
         rospy.Subscriber('light', LightList, self.light_callback)
 
     def genome_callback(self, data):
+
+        # If we are currently executing a different generation, reset queue and current genome.
+        if self.current_genome is not None and self.current_genome.gen_hash != data.gen_hash:
+            print('Started with new generation, clearing genome queue.')
+
+            with self.genome_queue.mutex:
+                self.genome_queue.queue.clear()
+
         self.genome_queue.put(data)
 
     def proximity_callback(self, proximityList):
@@ -82,23 +90,26 @@ class ArgosExperimentRunner:
 
             # if the simulation has run for the required number of time steps, reset the current controller.
             if self.time_steps >= self.num_steps:
-                self.current_controller = None
                 score = self.get_score()
-
                 self.publish_score(self.current_genome.key, self.current_genome.gen_hash, score)
+
+                self.current_controller = None
 
         # If no genome is running, then set a new available genome to run.
         elif not self.genome_queue.empty():
             encoded_genome = self.genome_queue.get()
-            genome = self.decoder.decode(encoded_genome)
-            self.current_controller = self.controller_class()
-            self.current_controller.reset(genome, self.config)
-            self.current_genome = encoded_genome
-            self.time_steps = 0
-
-            self.reset_simulation()
+            self.set_new_controller(encoded_genome)
 
         self.cmdVelPub.publish(twist)
+
+    def set_new_controller(self, enc_genome):
+        genome = self.decoder.decode(enc_genome)
+        self.current_controller = self.controller_class()
+        self.current_controller.reset(genome, self.config)
+        self.current_genome = enc_genome
+        self.time_steps = 0
+
+        self.reset_simulation()
 
     def param_update(self, _):
         """ This function updates the runner with the current parameters."""
