@@ -62,6 +62,11 @@ find_package(catkin REQUIRED COMPONENTS
    PuckList.msg
    Light.msg
    LightList.msg
+   SMGenome.msg
+   SMState.msg
+   SMTransition.msg
+   SMCondition.msg
+   WeightVector.msg
  )
 
 # Generate services in the 'srv' folder

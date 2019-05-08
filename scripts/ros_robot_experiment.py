@@ -1,28 +1,25 @@
 #!/usr/bin/env python
-import os
 import time
 from threading import Condition
 
-import neat
 import rospy
-from message_parsing import encode_neat_genome
 from examples.experiment_template import SingleExperiment
-from ma_evolution.msg import NEATGenome, Score
+from ma_evolution.msg import Score
 
 
 class ROSRobotExperiment(SingleExperiment):
     """ This class evaluates the genomes by sending them to a ROS node, which evaluates them."""
 
-    def __init__(self, learning_config, exp_runner, num_generations, genome_encoder_func,
+    def __init__(self, learning_config, exp_runner, num_generations, genome_encoder,
                  exp_name='', num_trails=1, base_directory=''):
-        """ Note the additional parameter genome_encoder_func, which encodes a genome for sending. """
+        """ Note the additional parameter genome_encoder, which encodes a genome for sending. """
 
         SingleExperiment.__init__(self, learning_config, exp_runner, num_generations, exp_name, num_trails, base_directory)
-        self.genome_encoder_func = genome_encoder_func
+        self.genome_encoder = genome_encoder
 
         # Initialise the variables needed to communicate with the others trough ROS.
         self.retrieved_scores = {}      # This variable is used to keep the retrieved scores of the ROS node.
-        self.genome_publisher = rospy.Publisher('genome_topic', NEATGenome, queue_size=100)
+        self.genome_publisher = rospy.Publisher('genome_topic', genome_encoder.get_message_type(), queue_size=100)
         self.condition_lock = Condition()
         self.generation = 0
         rospy.init_node('evolutionary_algorithm', anonymous=True)
@@ -37,7 +34,7 @@ class ROSRobotExperiment(SingleExperiment):
             assert genome_id == genome.key      # Safety check, so both can be used as keys.
             if genome_id not in self.retrieved_scores:
 
-                ros_encoded_genome = self.genome_encoder_func(genome, self.generation)
+                ros_encoded_genome = self.genome_encoder.encode(genome, self.generation)
                 self.genome_publisher.publish(ros_encoded_genome)
 
     def eval_genomes(self, genomes, config):
@@ -86,32 +83,3 @@ class ROSRobotExperiment(SingleExperiment):
             self.condition_lock.release()
 
             print('Got score {0} for controller {1}'.format(data.score, data.key))
-
-
-experiment_name = 'NEAT'
-num_generations = 100
-num_runs = 5
-
-
-if __name__ == '__main__':
-
-    config_location = 'config-feedforward'
-
-    # Create learning configuration.
-    local_dir = os.path.dirname(__file__)
-    config_path = os.path.join(local_dir, config_location)
-    config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
-                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                         config_path)
-
-    # Create and run experiment.
-
-    try:
-        experiment = ROSRobotExperiment(config, None, num_generations, encode_neat_genome, experiment_name,
-                                        base_directory='/home/matthijs/Desktop/test/')
-
-        for i in range(num_runs):
-            experiment.run(experiment_name + str(i))
-
-    except rospy.ROSInterruptException:
-        pass

@@ -1,24 +1,20 @@
 #!/usr/bin/env python
 
-import os
+import sys
 from Queue import Queue
 
-import neat
 import rospy
-from examples.experiment_functions import FeedForwardNetworkController
+from examples.experiment_functions import FeedForwardNetworkController, StateMachineController
 from neat.activations import ActivationFunctionSet
 from neat.aggregations import AggregationFunctionSet
 from std_srvs.srv import Empty
-from ma_evolution.msg import Score, NEATGenome
-from ma_evolution.msg import Puck
-from ma_evolution.msg import PuckList
-from ma_evolution.msg import Proximity
+from ma_evolution.msg import Score
 from ma_evolution.msg import ProximityList
 from ma_evolution.msg import LightList
 from geometry_msgs.msg import Twist
 from ma_evolution.srv import SimScore
 
-from message_parsing import decode_neat_genome
+from message_parsing import NEATROSEncoder, SMROSEncoder
 
 
 class ArgosExperimentRunner:
@@ -29,16 +25,17 @@ class ArgosExperimentRunner:
     current_controller = None
     current_genome = None           # Genome is required to send current generation and key.
 
-    def __init__(self, num_steps, controller_class, config):
+    def __init__(self, num_steps, controller_class, config, decoder):
         self.num_steps = num_steps
         self.controller_class = controller_class
         self.config = config
+        self.decoder = decoder
         self.genome_queue = Queue()
 
         # Publisher and subscribers of genome sender.
         self.scorePublisher = rospy.Publisher('score_topic', Score, queue_size=10)
         rospy.init_node('executioner', anonymous=True)
-        rospy.Subscriber('genome_topic', NEATGenome, self.genome_callback)
+        rospy.Subscriber('genome_topic', decoder.get_message_type(), self.genome_callback)
 
         # Publisher and subscribers of comminication with ArGos simulator.
         self.cmdVelPub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
@@ -83,7 +80,7 @@ class ArgosExperimentRunner:
         # If no genome is running, then set a new available genome to run.
         elif not self.genome_queue.empty():
             encoded_genome = self.genome_queue.get()
-            genome = decode_neat_genome(encoded_genome)
+            genome = self.decoder.decode(encoded_genome)
             self.current_controller = self.controller_class()
             self.current_controller.reset(genome, self.config)
             self.current_genome = encoded_genome
@@ -147,11 +144,34 @@ if __name__ == '__main__':
     # name for our 'listener' node so that multiple listeners can
     # run simultaneously.
 
-    print('Setup started')
+    my_argv = rospy.myargv(argv=sys.argv)
 
-    config = StandInGeneralConfig(48, 2)
-    exp_runner = ArgosExperimentRunner(150, FeedForwardNetworkController, config)
+    if len(my_argv) != 5:
+        print('usage: argos_experiment_runner.py controller num_steps num_inputs num_outputs')
+        print('but provided: ' + str(my_argv))
+    else:
 
-    print('Setup finished')
+        print('Setup started')
 
-    rospy.spin()
+        controller_class = None
+        decoder = None
+        if my_argv[1] == 'feed-forward':
+            controller_class = FeedForwardNetworkController
+            decoder = NEATROSEncoder
+        elif my_argv[1] == 'state-machine':
+            controller_class = StateMachineController
+            decoder = SMROSEncoder
+        else:
+            print('Invalid controller type provided')
+            exit(1)
+
+        num_steps = int(my_argv[2])
+        num_inputs = int(my_argv[3])
+        num_outputs = int(my_argv[4])
+
+        config = StandInGeneralConfig(num_inputs, num_outputs)
+        exp_runner = ArgosExperimentRunner(num_steps, controller_class, config, decoder)
+
+        print('Setup finished')
+
+        rospy.spin()
