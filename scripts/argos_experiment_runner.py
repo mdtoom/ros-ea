@@ -20,22 +20,32 @@ from message_parsing import NEATROSEncoder, SMROSEncoder
 class ArgosExperimentRunner:
     """ This class runs an experiment by connecting to argos evaluating a genome. """
 
-    proximityList = None
-    time_steps = 0
-    current_controller = None
-    current_genome = None           # Genome is required to send current generation and key.
+    def __init__(self, num_steps, controller_nm, num_inputs, num_outputs):
 
-    def __init__(self, num_steps, controller_class, config, decoder):
-        self.num_steps = num_steps
-        self.controller_class = controller_class
-        self.config = config
-        self.decoder = decoder
+        self.proximityList = None
+        self.time_steps = 0
+        self.current_controller = None
+        self.current_genome = None           # Genome is required to send current generation and key.
+        self.genome_sub = None
         self.genome_queue = Queue()
+
+        # These parameters are modifiable using the param server and the service update_params.
+        self.num_steps = 0
+        self.controller_class = None
+        self.decoder = None
+        self.config = None
 
         # Publisher and subscribers of genome sender.
         self.scorePublisher = rospy.Publisher('score_topic', Score, queue_size=10)
         rospy.init_node('executioner', anonymous=True)
-        rospy.Subscriber('genome_topic', decoder.get_message_type(), self.genome_callback)
+        rospy.Service('update_params', Empty, self.param_update)
+
+        # Set the initial parameters in the server.
+        rospy.set_param('controller', controller_nm)
+        rospy.set_param('num_inputs', num_inputs)
+        rospy.set_param('num_outputs', num_outputs)
+        rospy.set_param('num_steps', num_steps)
+        self.param_update(None)             # Note that this function has a considerable amount of initialization
 
         # Publisher and subscribers of comminication with ArGos simulator.
         self.cmdVelPub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
@@ -90,6 +100,36 @@ class ArgosExperimentRunner:
 
         self.cmdVelPub.publish(twist)
 
+    def param_update(self, _):
+        """ This function updates the runner with the current parameters."""
+
+        # Update controller type
+        controller_nm = rospy.get_param('controller')
+        if controller_nm == 'feed-forward':
+            self.controller_class = FeedForwardNetworkController
+            self.decoder = NEATROSEncoder
+            print('Going for feed-forward controller')
+        elif controller_nm == 'state-machine':
+            self.controller_class = StateMachineController
+            self.decoder = SMROSEncoder
+            print('Going for state-machine controller')
+        else:
+            print('Exiting because invalid controller type provided')
+            exit(1)
+
+        self.num_steps = rospy.get_param('num_steps')
+
+        num_inputs = rospy.get_param('num_inputs')
+        num_outputs = rospy.get_param('num_outputs')
+        self.config = StandInGeneralConfig(num_inputs, num_outputs)
+
+        # Resubscribe to genome topic since, message type now changes.
+        if self.genome_sub is not None:
+            self.genome_sub.unregister()
+        self.genome_sub = rospy.Subscriber('genome_topic', self.decoder.get_message_type(), self.genome_callback)
+
+        return []
+
     @staticmethod
     def reset_simulation():
 
@@ -117,7 +157,6 @@ class StandInConfig:
     to create and run genomes """
 
     def __init__(self, num_inputs, num_outputs):
-
 
         # Create full set of available activation functions.
         self.activation_defs = ActivationFunctionSet()
@@ -153,24 +192,13 @@ if __name__ == '__main__':
 
         print('Setup started')
 
-        controller_class = None
-        decoder = None
-        if my_argv[1] == 'feed-forward':
-            controller_class = FeedForwardNetworkController
-            decoder = NEATROSEncoder
-        elif my_argv[1] == 'state-machine':
-            controller_class = StateMachineController
-            decoder = SMROSEncoder
-        else:
-            print('Invalid controller type provided')
-            exit(1)
-
+        controller_nm = my_argv[1]
         num_steps = int(my_argv[2])
         num_inputs = int(my_argv[3])
         num_outputs = int(my_argv[4])
 
         config = StandInGeneralConfig(num_inputs, num_outputs)
-        exp_runner = ArgosExperimentRunner(num_steps, controller_class, config, decoder)
+        exp_runner = ArgosExperimentRunner(num_steps, controller_nm, num_inputs, num_outputs)
 
         print('Setup finished')
 
