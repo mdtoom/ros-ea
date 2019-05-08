@@ -85,7 +85,7 @@ class ArgosExperimentRunner:
                 self.current_controller = None
                 score = self.get_score()
 
-                self.publish_score(self.current_genome.key, self.current_genome.generation, score)
+                self.publish_score(self.current_genome.key, self.current_genome.gen_hash, score)
 
         # If no genome is running, then set a new available genome to run.
         elif not self.genome_queue.empty():
@@ -146,9 +146,9 @@ class ArgosExperimentRunner:
         score = get_score()
         return 10 - score.score
 
-    def publish_score(self, key, generation, score):
+    def publish_score(self, key, gen_hash, score):
         """ This function publishes the obtained score. """
-        score_message = Score(key, generation, score)
+        score_message = Score(key, gen_hash, score)
         self.scorePublisher.publish(score_message)
 
 

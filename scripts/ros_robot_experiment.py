@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import time
+from random import randint
 from threading import Condition
 
 import rospy
@@ -21,7 +22,7 @@ class ROSRobotExperiment(SingleExperiment):
         self.retrieved_scores = {}      # This variable is used to keep the retrieved scores of the ROS node.
         self.genome_publisher = rospy.Publisher('genome_topic', genome_encoder.get_message_type(), queue_size=100)
         self.condition_lock = Condition()
-        self.generation = 0
+        self.gen_hash = 0
         rospy.init_node('evolutionary_algorithm', anonymous=True)
         rospy.Subscriber('score_topic', Score, self.score_callback)
 
@@ -34,14 +35,14 @@ class ROSRobotExperiment(SingleExperiment):
             assert genome_id == genome.key      # Safety check, so both can be used as keys.
             if genome_id not in self.retrieved_scores:
 
-                ros_encoded_genome = self.genome_encoder.encode(genome, self.generation)
+                ros_encoded_genome = self.genome_encoder.encode(genome, self.gen_hash)
                 self.genome_publisher.publish(ros_encoded_genome)
 
     def eval_genomes(self, genomes, config):
         start_time = time.time()
 
-        self.generation += 1            # Used to ensure that messages from a previous run are ignored.
-        self.retrieved_scores = {}      # reset the list with retrieved scores.
+        self.gen_hash = randint(0, 1000000)     # Used to ensure that messages from a previous run are ignored.
+        self.retrieved_scores = {}              # reset the list with retrieved scores.
         self.send_genomes(genomes)
 
         # Wait until all scores came back.
@@ -76,7 +77,7 @@ class ROSRobotExperiment(SingleExperiment):
 
     def score_callback(self, data):
         # Put the retrieved score in a list and notify (trough the condition) that a new score has arrived.
-        if self.generation == data.generation:      # Ignore messages from a different generation.
+        if self.gen_hash == data.gen_hash:      # Ignore messages from a different generation.
             self.retrieved_scores[data.key] = data.score
             self.condition_lock.acquire(True)
             self.condition_lock.notify()
