@@ -20,13 +20,15 @@ from message_parsing import NEATROSEncoder, SMROSEncoder
 class ArgosExperimentRunner:
     """ This class runs an experiment by connecting to argos evaluating a genome. """
 
-    def __init__(self, num_steps, controller_nm, num_inputs, num_outputs):
+    def __init__(self, num_steps, controller_nm, num_inputs, num_outputs, clear_queue_on_new_gen=True):
 
         self.proximityList = None
         self.time_steps = 0
         self.current_controller = None
         self.current_genome = None
         self.genome_sub = None
+        self.latest_gen_hash = 0
+        self.clear_queue_on_new_gen = clear_queue_on_new_gen
         self.genome_queue = Queue()
 
         # These parameters are modifiable using the param server and the service update_params.
@@ -45,6 +47,7 @@ class ArgosExperimentRunner:
         rospy.set_param('num_inputs', num_inputs)
         rospy.set_param('num_outputs', num_outputs)
         rospy.set_param('num_steps', num_steps)
+        rospy.set_param('clear_queue_on_new_gen', clear_queue_on_new_gen)
         self.param_update(None)             # Note that this function has a considerable amount of initialization
 
         # Publisher and subscribers of comminication with ArGos simulator.
@@ -55,8 +58,10 @@ class ArgosExperimentRunner:
     def genome_callback(self, data):
 
         # If we are currently executing a different generation, reset queue and current genome.
-        if self.current_genome is not None and self.current_genome.gen_hash != data.gen_hash:
-            print('Started with new generation, clearing genome queue.')
+        if self.clear_queue_on_new_gen and self.latest_gen_hash != data.gen_hash:
+            rospy.loginfo('Started with new generation, clearing genome queue.')
+
+            self.latest_gen_hash = data.gen_hash
 
             with self.genome_queue.mutex:
                 self.genome_queue.queue.clear()
@@ -119,16 +124,17 @@ class ArgosExperimentRunner:
         if controller_nm == 'feed-forward':
             self.controller_class = FeedForwardNetworkController
             self.decoder = NEATROSEncoder
-            print('Going for feed-forward controller')
+            rospy.loginfo('Going for feed-forward controller')
         elif controller_nm == 'state-machine':
             self.controller_class = StateMachineController
             self.decoder = SMROSEncoder
-            print('Going for state-machine controller')
+            rospy.loginfo('Going for state-machine controller')
         else:
-            print('Exiting because invalid controller type provided')
+            rospy.logerr('Exiting because invalid controller type provided')
             exit(1)
 
         self.num_steps = rospy.get_param('num_steps')
+        self.clear_queue_on_new_gen = rospy.get_param('clear_queue_on_new_gen')
 
         num_inputs = rospy.get_param('num_inputs')
         num_outputs = rospy.get_param('num_outputs')
@@ -197,11 +203,11 @@ if __name__ == '__main__':
     my_argv = rospy.myargv(argv=sys.argv)
 
     if len(my_argv) != 5:
-        print('usage: argos_experiment_runner.py controller num_steps num_inputs num_outputs')
-        print('but provided: ' + str(my_argv))
+        rospy.logfatal('usage: argos_experiment_runner.py controller num_steps num_inputs num_outputs')
+        rospy.logfatal('but provided: ' + str(my_argv))
     else:
 
-        print('Setup started')
+        rospy.loginfo('Setup started')
 
         controller_nm = my_argv[1]
         num_steps = int(my_argv[2])
@@ -211,6 +217,6 @@ if __name__ == '__main__':
         config = StandInGeneralConfig(num_inputs, num_outputs)
         exp_runner = ArgosExperimentRunner(num_steps, controller_nm, num_inputs, num_outputs)
 
-        print('Setup finished')
+        rospy.loginfo('Setup finished')
 
         rospy.spin()

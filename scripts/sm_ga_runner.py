@@ -14,7 +14,7 @@ if __name__ == '__main__':
     config_location = 'config-sm_free_states'
     experiment_name = 'SM_free'
     num_generations = 100
-    num_runs = 5
+    num_runs = 1
 
     # Create learning configuration.
     local_dir = os.path.dirname(__file__)

@@ -50,17 +50,16 @@ CArgosRosBot::CArgosRosBot() :
 void CArgosRosBot::Init(TConfigurationNode& t_node) {
   // Create the topics to publish
   stringstream puckListTopic, proximityTopic, lightTopic;
-  puckListTopic << "/puck_list";
-  proximityTopic << "/proximity";
-  lightTopic << "/light";
+  proximityTopic << nodeHandle->getNamespace() << "/proximity";
+  lightTopic << nodeHandle->getNamespace() << "/light";
 
   puckListPub = nodeHandle->advertise<PuckList>(puckListTopic.str(), 1);
   proximityPub = nodeHandle->advertise<ProximityList>(proximityTopic.str(), 1);
   lightPub = nodeHandle->advertise<LightList>(lightTopic.str(), 1);
 
   // Create the subscribers
-  stringstream cmdVelTopic;//, gripperTopic;
-  cmdVelTopic << "/cmd_vel";
+  stringstream cmdVelTopic;
+  cmdVelTopic << nodeHandle->getNamespace() << "/cmd_vel";
   cmdVelSub = nodeHandle->subscribe(cmdVelTopic.str(), 1, &CArgosRosBot::cmdVelCallback, this);
 
   // Get sensor/actuator handles
