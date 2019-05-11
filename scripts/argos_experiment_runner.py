@@ -161,7 +161,7 @@ class ArgosExperimentRunner:
         rospy.wait_for_service('score')
         get_score = rospy.ServiceProxy('score', SimScore)
         score = get_score()
-        return 10 - score.score
+        return score.score
 
     def publish_score(self, key, gen_hash, score):
         """ This function publishes the obtained score. """

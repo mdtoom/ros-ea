@@ -6,12 +6,22 @@
 
 CMPGAPhototaxisLoopFunctions::CMPGAPhototaxisLoopFunctions() :
    m_pcFootBot(NULL),
-   m_pcRNG(NULL) {}
+   m_pcRNG(NULL) {
 
-/****************************************/
-/****************************************/
+    m_vecResetLocation.Position.FromSphericalCoords(
+        4.5f,                                          // distance from origin
+        CRadians::PI_OVER_TWO,                         // angle with Z axis
+        static_cast<Real>(1) * CRadians::PI / 12.0f // rotation around Z
+    );
 
-CMPGAPhototaxisLoopFunctions::~CMPGAPhototaxisLoopFunctions() {
+    /* Set orientation */
+    CRadians cOrient = m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE);
+    m_vecResetLocation.Orientation.FromEulerAngles(
+        cOrient,        // rotation around Z
+        CRadians::ZERO, // rotation around Y
+        CRadians::ZERO  // rotation around X
+    );
+
 }
 
 /****************************************/
@@ -50,19 +60,6 @@ void CMPGAPhototaxisLoopFunctions::Init(TConfigurationNode& t_node) {
     * from a uniform distribution.
     */
 
-    m_vecResetLocation.Position.FromSphericalCoords(
-            4.5f,                                          // distance from origin
-            CRadians::PI_OVER_TWO,                         // angle with Z axis
-            static_cast<Real>(1) * CRadians::PI / 12.0f // rotation around Z
-    );
-
-    /* Set orientation */
-    CRadians cOrient = m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE);
-    m_vecResetLocation.Orientation.FromEulerAngles(
-            cOrient,        // rotation around Z
-            CRadians::ZERO, // rotation around Y
-            CRadians::ZERO  // rotation around X
-    );
 
     Reset();
 }
@@ -90,6 +87,7 @@ void CMPGAPhototaxisLoopFunctions::Reset() {
     }
 }
 
+
 bool CMPGAPhototaxisLoopFunctions::ResetRobot(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response) {
 
     Reset();
@@ -98,7 +96,7 @@ bool CMPGAPhototaxisLoopFunctions::ResetRobot(std_srvs::Empty::Request& request,
 }
 
 bool CMPGAPhototaxisLoopFunctions::GetScore(ma_evolution::SimScore::Request& request,
-        ma_evolution::SimScore::Response& response)
+                                                    ma_evolution::SimScore::Response& response)
 {
     Real score = Score();
     response.score = (float) score;
@@ -110,8 +108,10 @@ bool CMPGAPhototaxisLoopFunctions::GetScore(ma_evolution::SimScore::Request& req
 
 Real CMPGAPhototaxisLoopFunctions::Score() {
    /* The performance is simply the distance of the robot to the origin */
-   return m_pcFootBot->GetEmbodiedEntity().GetOriginAnchor().Position.Length();
+   return 10.0 - m_pcFootBot->GetEmbodiedEntity().GetOriginAnchor().Position.Length();
 }
+
+
 
 /****************************************/
 /****************************************/
