@@ -8,20 +8,27 @@ CMPGAPhototaxisLoopFunctions::CMPGAPhototaxisLoopFunctions() :
    m_pcFootBot(NULL),
    m_pcRNG(NULL) {
 
+}
+
+void CMPGAPhototaxisLoopFunctions::SetStartLocation() {
+
+    LOG.Flush();
+
     m_vecResetLocation.Position.FromSphericalCoords(
-        4.5f,                                          // distance from origin
-        CRadians::PI_OVER_TWO,                         // angle with Z axis
-        static_cast<Real>(1) * CRadians::PI / 12.0f // rotation around Z
+            4.5f,                                          // distance from origin
+            CRadians::PI_OVER_TWO,                         // angle with Z axis
+            static_cast<Real>(1) * CRadians::PI / 12.0f // rotation around Z
     );
 
     /* Set orientation */
     CRadians cOrient = m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE);
     m_vecResetLocation.Orientation.FromEulerAngles(
-        cOrient,        // rotation around Z
-        CRadians::ZERO, // rotation around Y
-        CRadians::ZERO  // rotation around X
+            cOrient,        // rotation around Z
+            CRadians::ZERO, // rotation around Y
+            CRadians::ZERO  // rotation around X
     );
 
+    LOG.Flush();
 }
 
 /****************************************/
@@ -33,6 +40,8 @@ void CMPGAPhototaxisLoopFunctions::Init(TConfigurationNode& t_node) {
     */
     m_pcRNG = CRandom::CreateRNG("argos");
 
+    SetStartLocation();
+
     // Register a reset service at the node of the simulation.
     m_pcResetService = CArgosRosBot::nodeHandle->
             advertiseService("reset", &CMPGAPhototaxisLoopFunctions::ResetRobot, this);
@@ -40,6 +49,10 @@ void CMPGAPhototaxisLoopFunctions::Init(TConfigurationNode& t_node) {
     // Register the get score service of the node of the simulation.
     m_pcScoreService = CArgosRosBot::nodeHandle->
             advertiseService("score", &CMPGAPhototaxisLoopFunctions::GetScore, this);
+
+    // Register the get score service of the node of the simulation.
+    m_pcTrajectoryService = CArgosRosBot::nodeHandle->
+            advertiseService("trajectory", &CMPGAPhototaxisLoopFunctions::GetTrajectory, this);
 
     /*
     * Create the foot-bot and get a reference to its controller
@@ -59,7 +72,6 @@ void CMPGAPhototaxisLoopFunctions::Init(TConfigurationNode& t_node) {
     * Also, the rotation of the robot is chosen at random
     * from a uniform distribution.
     */
-
 
     Reset();
 }
@@ -85,6 +97,22 @@ void CMPGAPhototaxisLoopFunctions::Reset() {
                << ">"
                << std::endl;
     }
+
+    m_vLocations.clear();
+}
+
+
+void CMPGAPhototaxisLoopFunctions::PostStep()
+{
+
+    CVector3 robotPosition = m_pcFootBot->GetEmbodiedEntity().GetOriginAnchor().Position;
+
+    geometry_msgs::Point point;
+    point.x = robotPosition.GetX();
+    point.y = robotPosition.GetY();
+    point.z = robotPosition.GetZ();
+
+    m_vLocations.emplace_back(point);
 }
 
 
@@ -100,6 +128,17 @@ bool CMPGAPhototaxisLoopFunctions::GetScore(ma_evolution::SimScore::Request& req
 {
     Real score = Score();
     response.score = (float) score;
+    return true;
+}
+
+bool CMPGAPhototaxisLoopFunctions::GetTrajectory(ma_evolution::Trajectory::Request& request,
+        ma_evolution::Trajectory::Response& response)
+{
+    for(std::vector<geometry_msgs::Point>::iterator it = m_vLocations.begin(); it != m_vLocations.end(); ++it)
+    {
+        response.Locations.emplace_back(*it);
+    }
+
     return true;
 }
 

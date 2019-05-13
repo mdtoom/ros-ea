@@ -4,12 +4,17 @@
 /* ARGoS-related headers */
 #include <argos3/core/utility/math/rng.h>
 #include <argos3/plugins/robots/foot-bot/simulator/footbot_entity.h>
+#include <argos3/core/simulator/loop_functions.h>
 
 #include "ros/ros.h"
 #include "std_srvs/Empty.h"
+#include "geometry_msgs/Point.h"
 #include "ma_evolution/SimScore.h"
+#include "ma_evolution/Trajectory.h"
 
-#include <argos3/core/simulator/loop_functions.h>
+#include <vector>
+
+
 
 /****************************************/
 /****************************************/
@@ -24,12 +29,21 @@ public:
     virtual ~CMPGAPhototaxisLoopFunctions() = default;
 
     virtual void Init(TConfigurationNode& t_node);
+
+    /** This function sets the start location of the robot, which is called in the init method. */
+    virtual void SetStartLocation();
+
+    virtual void PostStep();
+
     virtual void Reset();
 
     /** This function resets the robot to its original position. */
     virtual bool ResetRobot(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response);
 
     virtual bool GetScore(ma_evolution::SimScore::Request& request, ma_evolution::SimScore::Response& response);
+
+    /** This function returns the latest trajectory of the robot until reset. */
+    virtual bool GetTrajectory(ma_evolution::Trajectory::Request& request, ma_evolution::Trajectory::Response& response);
 
     /* Calculates the performance of the robot in a trial */
     virtual Real Score();
@@ -40,6 +54,8 @@ protected:
     ros::ServiceServer m_pcResetService;
     /** This server returns the current score of the simulation. */
     ros::ServiceServer m_pcScoreService;
+    /** This returns the list of locations of the robot from the latest reset. */
+    ros::ServiceServer m_pcTrajectoryService;
 
     /* The initial setup of a trial */
     struct SInitSetup {
@@ -51,6 +67,9 @@ protected:
     CFootBotEntity* m_pcFootBot;
     CRandom::CRNG* m_pcRNG;
 
+private:
+
+    std::vector<geometry_msgs::Point> m_vLocations;
 
 };
 

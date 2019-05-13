@@ -6,7 +6,7 @@
               args="/home/matthijs/Documents/ros_ws/src/ma_evolution/argos_worlds/light_world_no_gui.argos" />
 
         <node pkg="ma_evolution" type="argos_experiment_runner.py" name="argos_experiment_runner" output="screen"
-              args="state-machine 150 48 2" />
+              args="feed-forward 150 48 2" />
     </group>
 
     <group ns="sim2">
@@ -14,7 +14,7 @@
               args="/home/matthijs/Documents/ros_ws/src/ma_evolution/argos_worlds/light_world_no_gui.argos" />
 
         <node pkg="ma_evolution" type="argos_experiment_runner.py" name="argos_experiment_runner" output="screen"
-              args="state-machine 150 48 2" />
+              args="feed-forward 150 48 2" />
     </group>
 
     <group ns="sim3">
@@ -22,7 +22,7 @@
               args="/home/matthijs/Documents/ros_ws/src/ma_evolution/argos_worlds/light_world_no_gui.argos" />
 
         <node pkg="ma_evolution" type="argos_experiment_runner.py" name="argos_experiment_runner" output="screen"
-              args="state-machine 150 48 2" />
+              args="feed-forward 150 48 2" />
     </group>
 
     <group ns="sim4">
@@ -30,7 +30,7 @@
               args="/home/matthijs/Documents/ros_ws/src/ma_evolution/argos_worlds/light_world_no_gui.argos" />
 
         <node pkg="ma_evolution" type="argos_experiment_runner.py" name="argos_experiment_runner" output="screen"
-              args="state-machine 150 48 2" />
+              args="feed-forward 150 48 2" />
     </group>
 
 </launch>

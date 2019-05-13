@@ -25,7 +25,7 @@ if __name__ == '__main__':
 
     try:
         experiment = ROSRobotExperiment(config, None, num_generations, NEATROSEncoder, experiment_name,
-                                        base_directory='/home/matthijs/Desktop/test/')
+                                        base_directory='/home/matthijs/Desktop/obstacle_light_neat1/')
 
         for i in range(num_runs):
             experiment.run(experiment_name + str(i))

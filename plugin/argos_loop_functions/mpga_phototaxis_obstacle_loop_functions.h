@@ -21,22 +21,22 @@ class CMPGAPhototaxisObstacleLoopFunctions : public CMPGAPhototaxisLoopFunctions
 
 public:
 
-   CMPGAPhototaxisObstacleLoopFunctions();
-   virtual ~CMPGAPhototaxisObstacleLoopFunctions() = default;
+    CMPGAPhototaxisObstacleLoopFunctions();
 
-   virtual void Init(TConfigurationNode& t_node);
-   virtual void Reset();
+    virtual ~CMPGAPhototaxisObstacleLoopFunctions() = default;
 
-   /** This function resets the robot to its original position. */
-   virtual bool ResetRobot(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response);
+    virtual void Reset() override;
 
-   virtual bool GetScore(ma_evolution::SimScore::Request& request, ma_evolution::SimScore::Response& response);
+    virtual void SetStartLocation() override;
 
-   /* Calculates the performance of the robot in a trial */
-   virtual Real Score();
+    virtual void PostStep() override;
 
+    /* Calculates the performance of the robot in a trial */
+    virtual Real Score() override;
 
+private:
 
+    int m_iScore;
 };
 
 #endif

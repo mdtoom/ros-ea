@@ -37,8 +37,7 @@
     </controllers>
 
 
-    <loop_functions library="libmpga_phototaxis_loop_functions"
-                    label="mpga_phototaxis_loop_functions" />
+    <loop_functions library="libmpga_phototaxis_loop_functions" label="mpga_phototaxis_loop_functions" />
 
     <!-- *********************** -->
     <!-- * Arena configuration * -->
