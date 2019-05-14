@@ -13,8 +13,12 @@ from ma_evolution.msg import ProximityList
 from ma_evolution.msg import LightList
 from geometry_msgs.msg import Twist
 from ma_evolution.srv import SimScore
+from ma_evolution.srv import Done
 
 from message_parsing import NEATROSEncoder, SMROSEncoder
+
+
+DONE_CHECK_INTERVAL = 20
 
 
 class ArgosExperimentRunner:
@@ -95,10 +99,10 @@ class ArgosExperimentRunner:
 
             # if the simulation has run for the required number of time steps, reset the current controller.
             if self.time_steps >= self.num_steps:
-                score = self.get_score()
-                self.publish_score(self.current_genome.key, self.current_genome.gen_hash, score)
-
-                self.current_controller = None
+                self.finish_simulation()
+            elif self.time_steps % DONE_CHECK_INTERVAL == 0 and self.is_done():
+                # Also finish when the simulation indicates it is done.
+                self.finish_simulation()
 
         # If no genome is running, then set a new available genome to run.
         elif not self.genome_queue.empty():
@@ -106,6 +110,12 @@ class ArgosExperimentRunner:
             self.set_new_controller(encoded_genome)
 
         self.cmdVelPub.publish(twist)
+
+    def finish_simulation(self):
+        score = self.get_score()
+        self.publish_score(self.current_genome.key, self.current_genome.gen_hash, score)
+
+        self.current_controller = None
 
     def set_new_controller(self, enc_genome):
         genome = self.decoder.decode(enc_genome)
@@ -160,8 +170,15 @@ class ArgosExperimentRunner:
         """ This function gets the score from the simulation."""
         rospy.wait_for_service('score')
         get_score = rospy.ServiceProxy('score', SimScore)
-        score = get_score()
-        return score.score
+        msg = get_score()
+        return msg.score
+
+    @staticmethod
+    def is_done():
+        rospy.wait_for_service('done')
+        is_done = rospy.ServiceProxy('done', Done)
+        msg = is_done()
+        return msg.done
 
     def publish_score(self, key, gen_hash, score):
         """ This function publishes the obtained score. """

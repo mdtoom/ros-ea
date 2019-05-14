@@ -44,84 +44,88 @@ CArgosRosBot::CArgosRosBot() :
   stepsSinceCallback(0),
   leftSpeed(0),
   rightSpeed(0)//,
+{ }
+
+void CArgosRosBot::Init(TConfigurationNode& t_node)
 {
-}
+    // Create the topics to publish
+    stringstream puckListTopic, proximityTopic, lightTopic;
+    proximityTopic << nodeHandle->getNamespace() << "/proximity";
+    lightTopic << nodeHandle->getNamespace() << "/light";
 
-void CArgosRosBot::Init(TConfigurationNode& t_node) {
-  // Create the topics to publish
-  stringstream puckListTopic, proximityTopic, lightTopic;
-  proximityTopic << nodeHandle->getNamespace() << "/proximity";
-  lightTopic << nodeHandle->getNamespace() << "/light";
+    puckListPub = nodeHandle->advertise<PuckList>(puckListTopic.str(), 1);
+    proximityPub = nodeHandle->advertise<ProximityList>(proximityTopic.str(), 1);
+    lightPub = nodeHandle->advertise<LightList>(lightTopic.str(), 1);
 
-  puckListPub = nodeHandle->advertise<PuckList>(puckListTopic.str(), 1);
-  proximityPub = nodeHandle->advertise<ProximityList>(proximityTopic.str(), 1);
-  lightPub = nodeHandle->advertise<LightList>(lightTopic.str(), 1);
+    // Create the subscribers
+    stringstream cmdVelTopic;
+    cmdVelTopic << nodeHandle->getNamespace() << "/cmd_vel";
+    cmdVelSub = nodeHandle->subscribe(cmdVelTopic.str(), 1, &CArgosRosBot::cmdVelCallback, this);
 
-  // Create the subscribers
-  stringstream cmdVelTopic;
-  cmdVelTopic << nodeHandle->getNamespace() << "/cmd_vel";
-  cmdVelSub = nodeHandle->subscribe(cmdVelTopic.str(), 1, &CArgosRosBot::cmdVelCallback, this);
+    // Get sensor/actuator handles
+    m_pcWheels = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
+    m_pcProximity = GetSensor<CCI_FootBotProximitySensor>("footbot_proximity");
+    m_pcOmniCam = GetSensor<CCI_ColoredBlobOmnidirectionalCameraSensor>("colored_blob_omnidirectional_camera");
+    m_pcLight = GetSensor<CCI_FootBotLightSensor>("footbot_light");
 
-  // Get sensor/actuator handles
-  m_pcWheels = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
-  m_pcProximity = GetSensor<CCI_FootBotProximitySensor>("footbot_proximity");
-  m_pcOmniCam = GetSensor<CCI_ColoredBlobOmnidirectionalCameraSensor>("colored_blob_omnidirectional_camera");
-  m_pcLight = GetSensor<CCI_FootBotLightSensor>("footbot_light");
-
-  /*
-   * Parse the configuration file
-   *
-   * The user defines this part. Here, the algorithm accepts three
-   * parameters and it's nice to put them in the config file so we don't
-   * have to recompile if we want to try other settings.
-   */
-  GetNodeAttributeOrDefault(t_node, "stopWithoutSubscriberCount", stopWithoutSubscriberCount, stopWithoutSubscriberCount);
+    /*
+    * Parse the configuration file
+    *
+    * The user defines this part. Here, the algorithm accepts three
+    * parameters and it's nice to put them in the config file so we don't
+    * have to recompile if we want to try other settings.
+    */
+    GetNodeAttributeOrDefault(t_node, "stopWithoutSubscriberCount", stopWithoutSubscriberCount, stopWithoutSubscriberCount);
 }
 
 // Compares pucks for sorting purposes.  We sort by angle.
 bool puckComparator(Puck a, Puck b) {
-  return a.angle < b.angle;
+
+    return a.angle < b.angle;
 }
+
 
 void CArgosRosBot::PublishPucks() {
 
-  const CCI_ColoredBlobOmnidirectionalCameraSensor::SReadings& camReads = m_pcOmniCam->GetReadings();
-  PuckList puckList;
-  puckList.n = camReads.BlobList.size();
-  for (size_t i = 0; i < puckList.n; ++i) {
-    Puck puck;
-    puck.type = (camReads.BlobList[i]->Color == CColor::RED);
-    puck.range = camReads.BlobList[i]->Distance;
-    // Make the angle of the puck in the range [-PI, PI].  This is useful for
-    // tasks such as homing in on a puck using a simple controller based on
-    // the sign of this angle.
-    puck.angle = camReads.BlobList[i]->Angle.SignedNormalize().GetValue();
-    puckList.pucks.push_back(puck);
-  }
+    const CCI_ColoredBlobOmnidirectionalCameraSensor::SReadings& camReads = m_pcOmniCam->GetReadings();
+    PuckList puckList;
+    puckList.n = camReads.BlobList.size();
+    for (size_t i = 0; i < puckList.n; ++i) {
+        Puck puck;
+        puck.type = (camReads.BlobList[i]->Color == CColor::RED);
+        puck.range = camReads.BlobList[i]->Distance;
+        // Make the angle of the puck in the range [-PI, PI].  This is useful for
+        // tasks such as homing in on a puck using a simple controller based on
+        // the sign of this angle.
+        puck.angle = camReads.BlobList[i]->Angle.SignedNormalize().GetValue();
+        puckList.pucks.push_back(puck);
+    }
 
-  // Sort the puck list by angle.  This is useful for the purposes of extracting meaning from
-  // the local puck configuration (e.g. fitting a lines to the detected pucks).
-  sort(puckList.pucks.begin(), puckList.pucks.end(), puckComparator);
+    // Sort the puck list by angle.  This is useful for the purposes of extracting meaning from
+    // the local puck configuration (e.g. fitting a lines to the detected pucks).
+    sort(puckList.pucks.begin(), puckList.pucks.end(), puckComparator);
 
-  puckListPub.publish(puckList);
+    puckListPub.publish(puckList);
 }
+
 
 void CArgosRosBot::PublishProximity() {
-  /* Get readings from proximity sensor */
-  const CCI_FootBotProximitySensor::TReadings& tProxReads = m_pcProximity->GetReadings();
-  ProximityList proxList;
-  proxList.n = tProxReads.size();
-  for (size_t i = 0; i < proxList.n; ++i) {
-    Proximity prox;
-    prox.value = tProxReads[i].Value;
-    prox.angle = tProxReads[i].Angle.GetValue();
-    proxList.proximities.push_back(prox);
+    /* Get readings from proximity sensor */
+    const CCI_FootBotProximitySensor::TReadings& tProxReads = m_pcProximity->GetReadings();
+    ProximityList proxList;
+    proxList.n = tProxReads.size();
+    for (size_t i = 0; i < proxList.n; ++i) {
+        Proximity prox;
+        prox.value = tProxReads[i].Value;
+        prox.angle = tProxReads[i].Angle.GetValue();
+        proxList.proximities.push_back(prox);
 
-  //cout << GetId() << ": value: " << prox.value << ": angle: " << prox.angle << endl;
-  }
+        //cout << GetId() << ": value: " << prox.value << ": angle: " << prox.angle << endl;
+    }
 
-  proximityPub.publish(proxList);
+    proximityPub.publish(proxList);
 }
+
 
 void CArgosRosBot::PublishLight() {
     /* Get readings from light sensor */
@@ -144,6 +148,8 @@ void CArgosRosBot::PublishLight() {
 
 void CArgosRosBot::ControlStep() {
 
+
+
     if (!ros::ok())
     {
         LOG << "ROS stopped working" << std::endl;
@@ -151,22 +157,22 @@ void CArgosRosBot::ControlStep() {
         exit(0);
     }
 
-//  PublishPucks();
-  PublishProximity();
-  PublishLight();
+    //  PublishPucks();
+    PublishProximity();
+    PublishLight();
 
-  // Wait for any callbacks to be called.
-  ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(0.1));
+    // Wait for any callbacks to be called.
+    ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(0.1));
 
-  // If we haven't heard from the subscriber in a while, set the speed to zero.
-  if (stepsSinceCallback > stopWithoutSubscriberCount) {
-    leftSpeed = 0;
-    rightSpeed = 0;
-  } else {
-    stepsSinceCallback++;
-  }
+    // If we haven't heard from the subscriber in a while, set the speed to zero.
+    if (stepsSinceCallback > stopWithoutSubscriberCount) {
+        leftSpeed = 0;
+        rightSpeed = 0;
+    } else {
+        stepsSinceCallback++;
+    }
 
-  m_pcWheels->SetLinearVelocity(leftSpeed, rightSpeed);
+    m_pcWheels->SetLinearVelocity(leftSpeed, rightSpeed);
 }
 
 void CArgosRosBot::cmdVelCallback(const geometry_msgs::Twist& twist) {

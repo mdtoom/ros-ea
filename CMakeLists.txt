@@ -75,6 +75,7 @@ add_service_files(
   FILES
   SimScore.srv
   Trajectory.srv
+  Done.srv
  )
 
 ## Generate actions in the 'action' folder

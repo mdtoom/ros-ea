@@ -35,7 +35,6 @@ void CMPGAPhototaxisObstacleLoopFunctions::Reset() {
     CMPGAPhototaxisLoopFunctions::Reset();
 
     m_iScore = 0;
-
 }
 
 /****************************************/
@@ -51,9 +50,16 @@ void CMPGAPhototaxisObstacleLoopFunctions::PostStep() {
     lightPosition.SetZ(robotPosition.GetZ());
     CVector3 differenceVector = robotPosition - lightPosition;
 
-    if (differenceVector.Length() < 0.25)    // Score bonus points when close to the light.
+    if (!m_bDone)
     {
-        m_iScore++;
+        // After a collision do not update the score anymore.
+        if (m_pcFootBot->GetEmbodiedEntity().IsCollidingWithSomething())
+        {
+            m_bDone = true;
+        }
+
+        // Get points for closeness to light, as long as the robot did not collide.
+        m_iScore += (10.0 - differenceVector.Length()) / 10.0;
     }
 }
 
@@ -63,14 +69,7 @@ void CMPGAPhototaxisObstacleLoopFunctions::PostStep() {
 Real CMPGAPhototaxisObstacleLoopFunctions::Score() {
    /* The performance is simply the distance of the robot to the origin */
 
-    CPositionalEntity& light = (CPositionalEntity&) CSimulator::GetInstance().GetSpace().GetEntity("light");
-
-    CVector3 robotPosition = m_pcFootBot->GetEmbodiedEntity().GetOriginAnchor().Position;
-    CVector3 lightPosition = light.GetPosition();
-    lightPosition.SetZ(robotPosition.GetZ());          // Do not take height into account.
-    CVector3 differenceVector = robotPosition - lightPosition;
-
-    return (10.0 - differenceVector.Length()) / 10.0 + m_iScore;
+    return m_iScore;
 }
 
 /****************************************/

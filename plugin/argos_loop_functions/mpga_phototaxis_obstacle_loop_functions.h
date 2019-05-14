@@ -36,7 +36,7 @@ public:
 
 private:
 
-    int m_iScore;
+    float m_iScore;
 };
 
 #endif

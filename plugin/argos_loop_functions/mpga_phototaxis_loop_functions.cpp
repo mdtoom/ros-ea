@@ -6,13 +6,12 @@
 
 CMPGAPhototaxisLoopFunctions::CMPGAPhototaxisLoopFunctions() :
    m_pcFootBot(NULL),
-   m_pcRNG(NULL) {
+   m_pcRNG(NULL),
+   m_bDone(false) {
 
 }
 
 void CMPGAPhototaxisLoopFunctions::SetStartLocation() {
-
-    LOG.Flush();
 
     m_vecResetLocation.Position.FromSphericalCoords(
             4.5f,                                          // distance from origin
@@ -27,8 +26,6 @@ void CMPGAPhototaxisLoopFunctions::SetStartLocation() {
             CRadians::ZERO, // rotation around Y
             CRadians::ZERO  // rotation around X
     );
-
-    LOG.Flush();
 }
 
 /****************************************/
@@ -50,9 +47,10 @@ void CMPGAPhototaxisLoopFunctions::Init(TConfigurationNode& t_node) {
     m_pcScoreService = CArgosRosBot::nodeHandle->
             advertiseService("score", &CMPGAPhototaxisLoopFunctions::GetScore, this);
 
-    // Register the get score service of the node of the simulation.
     m_pcTrajectoryService = CArgosRosBot::nodeHandle->
             advertiseService("trajectory", &CMPGAPhototaxisLoopFunctions::GetTrajectory, this);
+
+    m_pcDoneService = CArgosRosBot::nodeHandle->advertiseService("done", &CMPGAPhototaxisLoopFunctions::IsDone, this);
 
     /*
     * Create the foot-bot and get a reference to its controller
@@ -99,6 +97,7 @@ void CMPGAPhototaxisLoopFunctions::Reset() {
     }
 
     m_vLocations.clear();
+    m_bDone = false;
 }
 
 
@@ -128,6 +127,12 @@ bool CMPGAPhototaxisLoopFunctions::GetScore(ma_evolution::SimScore::Request& req
 {
     Real score = Score();
     response.score = (float) score;
+    return true;
+}
+
+bool CMPGAPhototaxisLoopFunctions::IsDone(ma_evolution::Done::Request& request, ma_evolution::Done::Response& response)
+{
+    response.done = m_bDone;
     return true;
 }
 
