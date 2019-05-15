@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import os
+from os.path import expanduser
+
 import rospy
 
 import neat
@@ -8,8 +10,7 @@ from ros_robot_experiment import ROSRobotExperiment, ROSSimultaneRobotExperiment
 from message_parsing import NEATROSEncoder
 
 
-
-def run():
+def one_layer_run():
 
     experiment_name = 'NEAT'
     num_generations = 100
@@ -26,7 +27,7 @@ def run():
 
     try:
         experiment = ROSSimultaneRobotExperiment(config, None, num_generations, NEATROSEncoder, experiment_name,
-                                                 base_directory='/home/matthijs/Desktop/obstacle_light_one_layer/')
+                                                 base_directory=expanduser("~") + '/Desktop/obstacle_light_one_layer/')
 
         for i in range(num_runs):
             experiment.run(experiment_name + str(i))
@@ -37,4 +38,4 @@ def run():
 
 if __name__ == '__main__':
 
-    run()
+    one_layer_run()

@@ -4,15 +4,17 @@ import rospy
 
 import neat
 
-from ros_robot_experiment import ROSRobotExperiment, ROSSimultaneRobotExperiment
+from os.path import expanduser
+from ros_robot_experiment import ROSSimultaneRobotExperiment
 from message_parsing import NEATROSEncoder
 
-experiment_name = 'NEAT'
-num_generations = 100
-num_runs = 1
 
-if __name__ == '__main__':
 
+def neat_run():
+
+    experiment_name = 'NEAT'
+    num_generations = 100
+    num_runs = 5
     config_location = 'config-feedforward'
 
     # Create learning configuration.
@@ -24,10 +26,15 @@ if __name__ == '__main__':
 
     try:
         experiment = ROSSimultaneRobotExperiment(config, None, num_generations, NEATROSEncoder, experiment_name,
-                                        base_directory='/home/matthijs/Desktop/obstacle_light_neat1/')
+                                                 base_directory=expanduser("~") + '/Desktop/obstacle_light_neat2/')
 
         for i in range(num_runs):
             experiment.run(experiment_name + str(i))
 
     except rospy.ROSInterruptException:
         pass
+
+
+if __name__ == '__main__':
+
+    neat_run()

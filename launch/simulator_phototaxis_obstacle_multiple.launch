@@ -3,7 +3,7 @@
     <arg name="time_steps" default="600"/>
     <arg name="num_inputs" default="24"/>
     <arg name="num_outputs" default="2"/>
-    <arg name="controller" default="state-machine"/>
+    <arg name="controller" default="feed-forward"/>
 
     <group ns="sim1">
         <node pkg="ma_evolution" type="argos_launcher.py" name="argos_launcher" output="screen"
