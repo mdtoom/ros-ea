@@ -3,7 +3,7 @@
     <arg name="time_steps" default="600"/>
     <arg name="num_inputs" default="24"/>
     <arg name="num_outputs" default="2"/>
-    <arg name="controller" default="feed-forward"/>
+    <arg name="controller" default="state-machine"/>
 
     <group ns="sim1">
         <node pkg="ma_evolution" type="argos_launcher.py" name="argos_launcher" output="screen"
@@ -15,7 +15,7 @@
 
     <group ns="sim2">
         <node pkg="ma_evolution" type="argos_launcher.py" name="argos_launcher" output="screen"
-              args="/home/matthijs/Documents/ros_ws/src/ma_evolution/argos_worlds/obstacle_light_no_gui_1.argos" />
+              args="/home/matthijs/Documents/ros_ws/src/ma_evolution/argos_worlds/obstacle_light_no_gui_2.argos" />
 
         <node pkg="ma_evolution" type="argos_experiment_runner.py" name="argos_experiment_runner" output="screen"
               args="$(arg controller) $(arg time_steps) $(arg num_inputs) $(arg num_outputs)" />
@@ -23,7 +23,7 @@
 
     <group ns="sim3">
         <node pkg="ma_evolution" type="argos_launcher.py" name="argos_launcher" output="screen"
-              args="/home/matthijs/Documents/ros_ws/src/ma_evolution/argos_worlds/obstacle_light_no_gui_1.argos" />
+              args="/home/matthijs/Documents/ros_ws/src/ma_evolution/argos_worlds/obstacle_light_no_gui_3.argos" />
 
         <node pkg="ma_evolution" type="argos_experiment_runner.py" name="argos_experiment_runner" output="screen"
               args="$(arg controller) $(arg time_steps) $(arg num_inputs) $(arg num_outputs)" />
@@ -31,7 +31,7 @@
 
     <group ns="sim4">
         <node pkg="ma_evolution" type="argos_launcher.py" name="argos_launcher" output="screen"
-              args="/home/matthijs/Documents/ros_ws/src/ma_evolution/argos_worlds/obstacle_light_no_gui_1.argos" />
+              args="/home/matthijs/Documents/ros_ws/src/ma_evolution/argos_worlds/obstacle_light_no_gui_4.argos" />
 
         <node pkg="ma_evolution" type="argos_experiment_runner.py" name="argos_experiment_runner" output="screen"
               args="$(arg controller) $(arg time_steps) $(arg num_inputs) $(arg num_outputs)" />

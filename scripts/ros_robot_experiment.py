@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import time
 from random import randint
-from threading import Condition
+from threading import Condition, Lock
 
 import rospy
 from examples.experiment_template import SingleExperiment
@@ -11,13 +11,32 @@ from ma_evolution.msg import Score
 class SimulationCommunicator:
     """ This class takes communication with one simulation runner."""
 
-    def __init__(self, namespace, message_type, score_callback):
+    def __init__(self, namespace, message_type, condition_lock):
         print(namespace)
+        self.condition_lock = condition_lock
+        self.scores_lock = Lock()
         self.genome_publisher = rospy.Publisher(namespace + 'genome_topic', message_type, queue_size=100)
-        rospy.Subscriber(namespace + 'score_topic', Score, score_callback)
+        self.retrieved_scores = {}
+        self.gen_hash = 0
+        rospy.Subscriber(namespace + 'score_topic', Score, self.callback)
+
+    def reset(self):
+        self.gen_hash = 0
+        self.retrieved_scores = {}
 
     def publish_genome(self, enc_genome):
+        self.gen_hash = enc_genome.gen_hash
         self.genome_publisher.publish(enc_genome)
+
+    def callback(self, data):
+        # Put the retrieved score in a list and notify (trough the condition) that a new score has arrived.
+        # print('retrieved score {0} of gen {1}'.format(data.key, data.gen_hash))
+
+        if self.gen_hash == data.gen_hash:  # Ignore messages from a different generation.
+            self.retrieved_scores[data.key] = data.score
+            self.condition_lock.acquire(True)
+            self.condition_lock.notify()
+            self.condition_lock.release()
 
 
 class ROSRobotExperiment(SingleExperiment):
@@ -32,7 +51,6 @@ class ROSRobotExperiment(SingleExperiment):
         self.genome_encoder = genome_encoder
 
         # Initialise the variables needed to communicate with the others trough ROS.
-        self.retrieved_scores = {}  # This variable is used to keep the retrieved scores of the ROS node.
         self.condition_lock = Condition()
         self.gen_hash = 0
         rospy.init_node('evolutionary_algorithm', anonymous=True)
@@ -41,7 +59,7 @@ class ROSRobotExperiment(SingleExperiment):
         search_string = 'score_topic'
         score_topics = [topic[0] for topic in rospy.get_published_topics() if search_string in topic[0]]
         name_spaces = [topic.replace(search_string, '') for topic in score_topics]
-        self.sim_controllers = [SimulationCommunicator(ns, genome_encoder.get_message_type(), self.score_callback)
+        self.sim_controllers = [SimulationCommunicator(ns, genome_encoder.get_message_type(), self.condition_lock)
                                 for ns in name_spaces]
         time.sleep(1)       # Sleep is required for initialisation
 
@@ -52,7 +70,7 @@ class ROSRobotExperiment(SingleExperiment):
         for genome_id, genome in genomes:
 
             assert genome_id == genome.key  # Safety check, so both can be used as keys.
-            if genome_id not in self.retrieved_scores:
+            if genome_id not in self.aggregate_scores():
 
                 #print('Sending genome {0} to simulation {1}'.format(genome_id, controller_count))
                 ros_encoded_genome = self.genome_encoder.encode(genome, self.gen_hash)
@@ -63,32 +81,29 @@ class ROSRobotExperiment(SingleExperiment):
         start_time = time.time()
 
         self.gen_hash = randint(0, 1000000)  # Used to ensure that messages from a previous run are ignored.
-        self.retrieved_scores = {}  # reset the list with retrieved scores.
-        self.send_genomes(genomes)
+        self.reset_robots()
 
         # Wait until all scores came back.
         self.condition_lock.acquire()
 
         previous_received = 0
-        while len(self.retrieved_scores) != len(genomes):
+        while self.not_evaluated_all(genomes):
 
-            self.condition_lock.wait(10.0)
-
-            if previous_received == len(self.retrieved_scores):
-                print('Did not received new scores, got %s so far', previous_received)
-                print('Resending missing genomes')
+            current_received = self.count_received()
+            if previous_received == current_received:
+                print('Sending missing genomes, got {0} so far'.format(previous_received))
                 self.send_genomes(genomes)
 
-            previous_received = len(self.retrieved_scores)
+            previous_received = current_received
 
             if rospy.is_shutdown():
                 raise rospy.ROSInterruptException()
 
+            self.condition_lock.wait(10.0)
+
         self.condition_lock.release()
 
-        # Set the scores to the genomes.
-        for genome_id, genome in genomes:
-            genome.fitness = self.retrieved_scores[genome_id]
+        self.set_scores(genomes)
 
         end_time = time.time()
         time_diff = end_time - start_time
@@ -96,12 +111,68 @@ class ROSRobotExperiment(SingleExperiment):
 
         print("generation total_runtime: %s seconds, avg_runtime: %s seconds" % (time_diff, avg_time))
 
-    def score_callback(self, data):
-        # Put the retrieved score in a list and notify (trough the condition) that a new score has arrived.
-        #print('retrieved score {0} of gen {1}'.format(data.key, data.gen_hash))
+    def set_scores(self, genomes):
 
-        if self.gen_hash == data.gen_hash:  # Ignore messages from a different generation.
-            self.retrieved_scores[data.key] = data.score
-            self.condition_lock.acquire(True)
-            self.condition_lock.notify()
-            self.condition_lock.release()
+        # Set the scores to the genomes.
+        final_set = self.aggregate_scores()
+        for genome_id, genome in genomes:
+            genome.fitness = final_set[genome_id]
+
+    def not_evaluated_all(self, genomes):
+        return len(self.aggregate_scores()) != len(genomes)
+
+    def reset_robots(self):
+
+        for sc in self.sim_controllers:
+            sc.reset()
+
+    def count_received(self):
+        return sum(len(sc.retrieved_scores) for sc in self.sim_controllers)
+
+    def aggregate_scores(self):
+        """ This function aggregates the scores of the simulation runners"""
+        retrieved_scores = {}
+
+        for sc in self.sim_controllers:
+            retrieved_scores.update(sc.retrieved_scores)
+
+        return retrieved_scores
+
+
+class ROSSimultaneRobotExperiment(ROSRobotExperiment):
+
+    def not_evaluated_all(self, genomes):
+
+        for sc in self.sim_controllers:
+            if len(sc.retrieved_scores) != len(genomes):
+                return True
+
+        return False
+
+    def send_genomes(self, genomes):
+        """ This function resends the genomes for all genomes not yet received. """
+        for sc in self.sim_controllers:
+            for genome_id, genome in genomes:
+
+                assert genome_id == genome.key  # Safety check, so both can be used as keys.
+                if genome_id not in sc.retrieved_scores:
+
+                    # print('Sending genome {0} to simulation {1}'.format(genome_id, controller_count))
+                    ros_encoded_genome = self.genome_encoder.encode(genome, self.gen_hash)
+                    sc.publish_genome(ros_encoded_genome)
+
+    def set_scores(self, genomes):
+        # Set the scores to the genomes.
+        for genome_id, genome in genomes:
+
+            scores = [sc.retrieved_scores[genome_id] for sc in self.sim_controllers]
+            genome.fitness = sum(scores) / len(scores)
+
+    def aggregate_scores(self):
+        """ This function aggregates the scores of the simulation runners"""
+        retrieved_scores = []
+
+        for sc in self.sim_controllers:
+            retrieved_scores.extend(sc.retrieved_scores[key] for key in sc.retrieved_scores)
+
+        return retrieved_scores

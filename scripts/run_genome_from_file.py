@@ -70,6 +70,9 @@ if __name__ == '__main__':
     y_locs = [loc.y for loc in trajectory.Locations]
 
     plt.plot(y_locs, x_locs)
+    plt.xlim((-1.5, 6.5))
+    plt.ylim((0, 5))
+
     plt.show()
 
 

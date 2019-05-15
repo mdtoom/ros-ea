@@ -2,7 +2,7 @@
 
 [NEAT]
 fitness_criterion     = max
-fitness_threshold     = 350
+fitness_threshold     = 600
 pop_size              = 100
 reset_on_extinction   = False
 
@@ -43,7 +43,7 @@ transition_delete_prob  = 0.05
 
 # network parameters
 num_initial_states      = 1
-num_inputs              = 48
+num_inputs              = 24
 num_outputs             = 2
 max_num_states          = 5
 
