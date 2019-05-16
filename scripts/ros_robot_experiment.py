@@ -7,6 +7,8 @@ import rospy
 from examples.experiment_template import SingleExperiment
 from ma_evolution.msg import Score
 
+from tools.score_saver import ScoreSaver
+
 
 class SimulationCommunicator:
     """ This class takes communication with one simulation runner."""
@@ -141,6 +143,14 @@ class ROSRobotExperiment(SingleExperiment):
 
 class ROSSimultaneRobotExperiment(ROSRobotExperiment):
 
+    def __init__(self, learning_config, exp_runner, num_generations, genome_encoder,
+                 exp_name='', num_trails=1, base_directory=''):
+
+        ROSRobotExperiment.__init__(self, learning_config, exp_runner, num_generations, genome_encoder, exp_name,
+                                    num_trails, base_directory)
+
+        self.score_saver = ScoreSaver(self.base_directory + self.exp_name + '_scores.csv', len(self.sim_controllers))
+
     def not_evaluated_all(self, genomes):
 
         for sc in self.sim_controllers:
@@ -163,10 +173,16 @@ class ROSSimultaneRobotExperiment(ROSRobotExperiment):
 
     def set_scores(self, genomes):
         # Set the scores to the genomes.
+        score_dict = {}     # Used for storing the scores.
         for genome_id, genome in genomes:
 
             scores = [sc.retrieved_scores[genome_id] for sc in self.sim_controllers]
+            score_dict[genome_id] = scores
+
             genome.fitness = sum(scores) / len(scores)
+
+        # Store scores
+        self.score_saver.write_scores(self.p.generation, score_dict)
 
     def aggregate_scores(self):
         """ This function aggregates the scores of the simulation runners"""
