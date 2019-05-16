@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 import os
+from os.path import expanduser
 
 import neat
 import rospy
 from neat.reproduction_mutation_only import ReproductionMutationOnly
 from neat.state_machine_genome import StateMachineGenome
 
-from ros_robot_experiment import ROSRobotExperiment
+from ros_robot_experiment import ROSSimultaneRobotExperiment
 from message_parsing import SMROSEncoder
 
-if __name__ == '__main__':
 
+def sm_run():
     config_location = 'config-sm_free_states'
     experiment_name = 'SM_free'
     num_generations = 100
@@ -26,11 +27,16 @@ if __name__ == '__main__':
                          config_path)
 
     try:
-        experiment = ROSRobotExperiment(config, None, num_generations, SMROSEncoder, experiment_name,
-                                        base_directory='/home/matthijs/Desktop/test/')
+        experiment = ROSSimultaneRobotExperiment(config, None, num_generations, SMROSEncoder, experiment_name,
+                                        base_directory=expanduser("~") + '/Desktop/sm/')
 
         for i in range(num_runs):
             experiment.run(experiment_name + str(i))
 
     except rospy.ROSInterruptException:
         pass
+
+
+if __name__ == '__main__':
+
+    sm_run()
