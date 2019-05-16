@@ -59,7 +59,11 @@ void CMPGAPhototaxisObstacleLoopFunctions::PostStep() {
         }
 
         // Get points for closeness to light, as long as the robot did not collide.
-        m_iScore += (10.0 - differenceVector.Length()) / 10.0;
+        Real normalizedDistance = (10.0 - differenceVector.Length()) / 10.0;
+        if (normalizedDistance > 1.0 or normalizedDistance < 0.0) {
+            LOG << "Got distance: " << normalizedDistance << std::endl;
+        }
+        m_iScore += normalizedDistance * normalizedDistance;
     }
 }
 
