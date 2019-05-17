@@ -14,7 +14,7 @@ class ScoreSaver:
         # Write the header to file.
         with open(self.file_location, 'w') as csvFile:
             writer = csv.writer(csvFile)
-            csv_header = ['generation', 'identifier'] + ['score_' + str(i) for i in range(num_scores)]
+            csv_header = ['generation', 'identifier'] + ['score_' + str(i) for i in range(num_scores)] + ['final_score']
             writer.writerow(csv_header)
 
     def write_scores(self, generation, score_table):

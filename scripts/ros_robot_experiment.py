@@ -177,9 +177,10 @@ class ROSSimultaneRobotExperiment(ROSRobotExperiment):
         for genome_id, genome in genomes:
 
             scores = [sc.retrieved_scores[genome_id] for sc in self.sim_controllers]
-            score_dict[genome_id] = scores
+            final_score = sum(scores) / len(scores)
+            score_dict[genome_id] = scores + [final_score]
 
-            genome.fitness = sum(scores) / len(scores)
+            genome.fitness = final_score
 
         # Store scores
         self.score_saver.write_scores(self.p.generation, score_dict)
