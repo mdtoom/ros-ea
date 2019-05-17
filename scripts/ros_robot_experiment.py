@@ -9,6 +9,9 @@ from ma_evolution.msg import Score
 from ma_evolution.srv import SimScore
 from ma_evolution.srv import Trajectory
 
+from tools.score_saver import ScoreSaver
+
+
 class SimulationCommunicator:
     """ This class takes communication with one simulation runner."""
 
