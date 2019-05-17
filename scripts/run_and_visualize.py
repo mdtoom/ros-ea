@@ -18,6 +18,7 @@ def create_visualization(genome_locations, encoder, sc, visualize_loc='scenario.
     """ This method creates a visualization and writes it back to the same folder."""
     plt.clf()
 
+    scores = []
     num = 0
     for genome_location in genome_locations:
 
@@ -43,6 +44,7 @@ def create_visualization(genome_locations, encoder, sc, visualize_loc='scenario.
         # Get the result.
         trajectory = sc.get_trajectory()
         score = sc.get_score()
+        scores.append(score.score)
         print('got a score of {0:.2f}'.format(score.score))
 
         x_locs = [loc.x for loc in trajectory.Locations]
@@ -57,6 +59,11 @@ def create_visualization(genome_locations, encoder, sc, visualize_loc='scenario.
     plt.xlim((0, 5))
     plt.ylim((-1.5, 6.5))
     plt.savefig(visualize_loc)
+
+    avg_scenario_score = sum(scores) / len(scores)
+    print("Average scenario score: {0}". format(avg_scenario_score))
+
+    return avg_scenario_score
 
 
 if __name__ == '__main__':
@@ -92,8 +99,12 @@ if __name__ == '__main__':
 
     genome_locations = glob.glob(my_argv[2] + 'winner*.pickle')
 
+    avg_score = 0
     for sc in sim_controllers:
 
         filename = 'scenario' + filter(str.isdigit, sc.namespace) + '.png'
         print(filename)
-        create_visualization(genome_locations, encoder, sc, filename)
+        avg_score += create_visualization(genome_locations, encoder, sc, filename)
+
+    avg_score /= len(sim_controllers)
+    print('average scores: {0}'.format(avg_score))
