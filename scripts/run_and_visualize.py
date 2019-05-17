@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import csv
 import glob
 import pickle
 import sys
@@ -62,8 +63,27 @@ def create_visualization(genome_locations, encoder, sc, visualize_loc='scenario.
 
     avg_scenario_score = sum(scores) / len(scores)
     print("Average scenario score: {0}". format(avg_scenario_score))
-
     return avg_scenario_score
+
+
+def visualize_winner_paths(sim_controllers, base_dir, encoder):
+
+    genome_locations = glob.glob(base_dir + 'winner*.pickle')
+
+    avg_scores = []
+    for sc in sim_controllers:
+
+        filename = 'scenario' + filter(str.isdigit, sc.namespace) + '.png'
+        print(filename)
+        avg_score = create_visualization(genome_locations, encoder, sc, base_dir + filename)
+        avg_scores.append(avg_score)
+
+    # Write the line of average scores to a winner score csv file.
+    avg_fitness = sum(avg_scores) / len(avg_scores)
+    avg_scores.append(avg_fitness)
+    with open(base_dir + 'winner_scores.csv', 'w') as csvFile:
+        writer = csv.writer(csvFile)
+        writer.writerow(avg_scores)
 
 
 if __name__ == '__main__':
@@ -97,14 +117,4 @@ if __name__ == '__main__':
                        for ns in name_spaces]
     sleep(1)  # Sleep is required for initialisation
 
-    genome_locations = glob.glob(my_argv[2] + 'winner*.pickle')
-
-    avg_score = 0
-    for sc in sim_controllers:
-
-        filename = 'scenario' + filter(str.isdigit, sc.namespace) + '.png'
-        print(filename)
-        avg_score += create_visualization(genome_locations, encoder, sc, filename)
-
-    avg_score /= len(sim_controllers)
-    print('average scores: {0}'.format(avg_score))
+    visualize_winner_paths(sim_controllers, my_argv[2], encoder)

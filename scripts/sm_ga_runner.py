@@ -9,13 +9,15 @@ from neat.state_machine_genome import StateMachineGenome
 
 from ros_robot_experiment import ROSSimultaneRobotExperiment
 from message_parsing import SMROSEncoder
+from run_and_visualize import visualize_winner_paths
 
 
 def sm_run():
     config_location = 'config-sm_free_states'
     experiment_name = 'SM_free'
     num_generations = 100
-    num_runs = 1
+    num_runs = 5
+    base_directory = expanduser("~") + '/Desktop/sm/'
 
     # Create learning configuration.
     local_dir = os.path.dirname(__file__)
@@ -28,10 +30,12 @@ def sm_run():
 
     try:
         experiment = ROSSimultaneRobotExperiment(config, None, num_generations, SMROSEncoder, experiment_name,
-                                        base_directory=expanduser("~") + '/Desktop/sm/')
+                                        base_directory=base_directory)
 
         for i in range(num_runs):
             experiment.run(experiment_name + str(i))
+
+        visualize_winner_paths(experiment.sim_controllers, base_directory, SMROSEncoder)
 
     except rospy.ROSInterruptException:
         pass
