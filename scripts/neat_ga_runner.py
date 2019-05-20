@@ -7,7 +7,7 @@ import neat
 from os.path import expanduser
 from ros_robot_experiment import ROSSimultaneRobotExperiment
 from message_parsing import NEATROSEncoder
-from run_and_visualize import visualize_winner_paths
+from run_and_visualize import ScenarioVisualiser
 
 
 def neat_run():
@@ -32,7 +32,8 @@ def neat_run():
         for i in range(num_runs):
             experiment.run(experiment_name + str(i))
 
-        visualize_winner_paths(experiment.sim_controllers, base_directory, NEATROSEncoder)
+        sv = ScenarioVisualiser(experiment.sim_controllers, base_directory, NEATROSEncoder)
+        sv.visualize_winner_paths()
 
     except rospy.ROSInterruptException:
         pass

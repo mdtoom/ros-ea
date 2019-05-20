@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 import csv
-import glob
-import pickle
 import sys
 from multiprocessing import Condition
 from time import sleep
@@ -11,79 +9,63 @@ import rospy
 
 from message_parsing import NEATROSEncoder, SMROSEncoder
 from ros_robot_experiment import SimulationCommunicator
-
-matplotlib_color_values = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
-
-
-def create_visualization(genome_locations, encoder, sc, visualize_loc='scenario.png'):
-    """ This method creates a visualization and writes it back to the same folder."""
-    plt.clf()
-
-    scores = []
-    num = 0
-    for genome_location in genome_locations:
-
-        sc.reset()
-
-        # Load and encode the genome.
-        with open(genome_location, 'rb') as handle:
-            genome = pickle.load(handle)
-
-        ros_encoded_genome = encoder.encode(genome, 0)
-
-        sc.condition_lock.acquire()
-        sc.publish_genome(ros_encoded_genome)
-
-        while not sc.condition_lock.wait(1.0):
-            if len(sc.retrieved_scores) == 1:
-                break
-
-            if rospy.is_shutdown():
-                exit(1)
-        sc.condition_lock.release()
-
-        # Get the result.
-        trajectory = sc.get_trajectory()
-        score = sc.get_score()
-        scores.append(score.score)
-        print('got a score of {0:.2f}'.format(score.score))
-
-        x_locs = [loc.x for loc in trajectory.Locations]
-        y_locs = [loc.y for loc in trajectory.Locations]
-
-        plt.plot(y_locs, x_locs, matplotlib_color_values[num % len(matplotlib_color_values)],
-                 label='gen score: {0:.2f}'.format(score.score))
-        num += 1
-
-    plt.axis('scaled')
-    plt.legend()
-    plt.xlim((0, 5))
-    plt.ylim((-1.5, 6.5))
-    plt.savefig(visualize_loc)
-
-    avg_scenario_score = sum(scores) / len(scores)
-    print("Average scenario score: {0}". format(avg_scenario_score))
-    return avg_scenario_score
+from tools.genome_analysis_tool import GenomeAnalysisTool
 
 
-def visualize_winner_paths(sim_controllers, base_dir, encoder):
+class ScenarioVisualiser(GenomeAnalysisTool):
+    """ This class creates visualizations of each winner genome in the given class."""
 
-    genome_locations = glob.glob(base_dir + 'winner*.pickle')
+    matplotlib_color_values = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
 
-    avg_scores = []
-    for sc in sim_controllers:
+    def create_visualization(self, sc, visualize_loc='scenario.png'):
+        """ This method creates a visualization and writes it back to the same folder."""
+        plt.clf()
 
-        filename = 'scenario' + filter(str.isdigit, sc.namespace) + '.png'
-        print(filename)
-        avg_score = create_visualization(genome_locations, encoder, sc, base_dir + filename)
-        avg_scores.append(avg_score)
+        scores = []
+        num = 0
+        for genome in self.genomes:
 
-    # Write the line of average scores to a winner score csv file.
-    avg_fitness = sum(avg_scores) / len(avg_scores)
-    avg_scores.append(avg_fitness)
-    with open(base_dir + 'winner_scores.csv', 'w') as csvFile:
-        writer = csv.writer(csvFile)
-        writer.writerow(avg_scores)
+            self.run_genome(sc, genome)
+
+            # Get the result.
+            trajectory = sc.get_trajectory()
+            score = sc.get_score()
+            scores.append(score.score)
+            print('got a score of {0:.2f}'.format(score.score))
+
+            x_locs = [loc.x for loc in trajectory.Locations]
+            y_locs = [loc.y for loc in trajectory.Locations]
+
+            plt.plot(y_locs, x_locs, self.matplotlib_color_values[num % len(self.matplotlib_color_values)],
+                     label='gen score: {0:.2f}'.format(score.score))
+            num += 1
+
+        plt.axis('scaled')
+        plt.legend()
+        plt.xlim((0, 5))
+        plt.ylim((-1.5, 6.5))
+        plt.savefig(visualize_loc)
+
+        avg_scenario_score = sum(scores) / len(scores)
+        print("Average scenario score: {0}". format(avg_scenario_score))
+        return avg_scenario_score
+
+    def visualize_winner_paths(self):
+
+        avg_scores = []
+        for sc in self.sim_controllers:
+
+            filename = 'scenario' + filter(str.isdigit, sc.namespace) + '.png'
+            print(filename)
+            avg_score = self.create_visualization(sc, self.base_dir + filename)
+            avg_scores.append(avg_score)
+
+        # Write the line of average scores to a winner score csv file.
+        avg_fitness = sum(avg_scores) / len(avg_scores)
+        avg_scores.append(avg_fitness)
+        with open(self.base_dir + 'winner_scores.csv', 'a') as csvFile:
+            writer = csv.writer(csvFile)
+            writer.writerow(avg_scores)
 
 
 if __name__ == '__main__':
@@ -117,4 +99,5 @@ if __name__ == '__main__':
                        for ns in name_spaces]
     sleep(1)  # Sleep is required for initialisation
 
-    visualize_winner_paths(sim_controllers, my_argv[2], encoder)
+    sv = ScenarioVisualiser(sim_controllers, my_argv[2], encoder)
+    sv.visualize_winner_paths()

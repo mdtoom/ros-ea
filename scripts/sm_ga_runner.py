@@ -9,7 +9,7 @@ from neat.state_machine_genome import StateMachineGenome
 
 from ros_robot_experiment import ROSSimultaneRobotExperiment
 from message_parsing import SMROSEncoder
-from run_and_visualize import visualize_winner_paths
+from run_and_visualize import ScenarioVisualiser
 
 
 def sm_run():
@@ -35,7 +35,8 @@ def sm_run():
         for i in range(num_runs):
             experiment.run(experiment_name + str(i))
 
-        visualize_winner_paths(experiment.sim_controllers, base_directory, SMROSEncoder)
+        sv = ScenarioVisualiser(experiment.sim_controllers, base_directory, SMROSEncoder)
+        sv.visualize_winner_paths()
 
     except rospy.ROSInterruptException:
         pass
