@@ -67,9 +67,9 @@ condition_mutate_comp_prob       = 0.5
 condition_mutate_input_prob      = 0.5
 
 condition_comparator_init_type        = uniform
-condition_comparator_init_mean        = 50.0
-condition_comparator_init_stdev       = 50.0
-condition_comparator_max_value        = 100.0
+condition_comparator_init_mean        = 0.5
+condition_comparator_init_stdev       = 1.0
+condition_comparator_max_value        = 1.0
 condition_comparator_min_value        = 0.0
 condition_comparator_mutate_power     = 0.5
 condition_comparator_mutate_rate      = 0.8
