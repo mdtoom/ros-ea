@@ -57,12 +57,12 @@ class SimulationCommunicator:
 class ROSRobotExperiment(SingleExperiment):
     """ This class evaluates the genomes by sending them to a ROS node, which evaluates them."""
 
-    def __init__(self, learning_config, exp_runner, num_generations, genome_encoder,
-                 exp_name='', num_trails=1, base_directory=''):
+    def __init__(self, learning_config, num_generations, genome_encoder,
+                 exp_name='', num_trails=1, base_directory='', cntrl_draw_func=None):
         """ Note the additional parameter genome_encoder, which encodes a genome for sending. """
 
-        SingleExperiment.__init__(self, learning_config, exp_runner, num_generations, exp_name, num_trails,
-                                  base_directory)
+        SingleExperiment.__init__(self, learning_config, num_generations, exp_name, num_trails,
+                                  base_directory, cntrl_draw_func)
         self.genome_encoder = genome_encoder
 
         # Initialise the variables needed to communicate with the others trough ROS.
@@ -156,11 +156,11 @@ class ROSRobotExperiment(SingleExperiment):
 
 class ROSSimultaneRobotExperiment(ROSRobotExperiment):
 
-    def __init__(self, learning_config, exp_runner, num_generations, genome_encoder,
-                 exp_name='', num_trails=1, base_directory=''):
+    def __init__(self, learning_config, num_generations, genome_encoder,
+                 exp_name='', num_trails=1, base_directory='', cntrl_draw_func=None):
 
-        ROSRobotExperiment.__init__(self, learning_config, exp_runner, num_generations, genome_encoder, exp_name,
-                                    num_trails, base_directory)
+        ROSRobotExperiment.__init__(self, learning_config, num_generations, genome_encoder, exp_name,
+                                    num_trails, base_directory, cntrl_draw_func)
 
         self.score_saver = ScoreSaver(self.base_directory + self.exp_name + '_scores.csv', len(self.sim_controllers))
 

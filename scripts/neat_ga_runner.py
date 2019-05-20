@@ -8,6 +8,7 @@ from os.path import expanduser
 from ros_robot_experiment import ROSSimultaneRobotExperiment
 from message_parsing import NEATROSEncoder
 from run_and_visualize import ScenarioVisualiser
+from tools.draw_functions import draw_nn
 
 
 def neat_run():
@@ -26,8 +27,8 @@ def neat_run():
                          config_path)
 
     try:
-        experiment = ROSSimultaneRobotExperiment(config, None, num_generations, NEATROSEncoder, experiment_name,
-                                                 base_directory=base_directory)
+        experiment = ROSSimultaneRobotExperiment(config, num_generations, NEATROSEncoder, experiment_name,
+                                                 base_directory=base_directory, cntrl_draw_func=draw_nn)
 
         for i in range(num_runs):
             experiment.run(experiment_name + str(i))

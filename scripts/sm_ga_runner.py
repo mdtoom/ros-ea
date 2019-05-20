@@ -10,6 +10,7 @@ from neat.state_machine_genome import StateMachineGenome
 from ros_robot_experiment import ROSSimultaneRobotExperiment
 from message_parsing import SMROSEncoder
 from run_and_visualize import ScenarioVisualiser
+from tools.draw_functions import draw_sm
 
 
 def sm_run():
@@ -29,8 +30,8 @@ def sm_run():
                          config_path)
 
     try:
-        experiment = ROSSimultaneRobotExperiment(config, None, num_generations, SMROSEncoder, experiment_name,
-                                        base_directory=base_directory)
+        experiment = ROSSimultaneRobotExperiment(config, num_generations, SMROSEncoder, experiment_name,
+                                        base_directory=base_directory, cntrl_draw_func=draw_sm)
 
         for i in range(num_runs):
             experiment.run(experiment_name + str(i))
