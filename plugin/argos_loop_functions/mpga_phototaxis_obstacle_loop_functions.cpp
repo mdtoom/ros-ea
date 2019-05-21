@@ -3,11 +3,16 @@
 #include <argos3/core/simulator/simulator.h>
 #include <argos3/core/simulator/entity/positional_entity.h>
 #include <argos3/core/utility/math/vector3.h>
+#include <cmath>
 
 /****************************************/
 /****************************************/
 
 using namespace argos;
+
+#define FITNESS_POWER 5            // This define is used to indicate the shape of the fitness function.
+
+const Real maxDistance = 11.0;      // Constant used to indicate the max distance from the robot to the light.
 
 CMPGAPhototaxisObstacleLoopFunctions::CMPGAPhototaxisObstacleLoopFunctions() : m_iScore(0)
 { }
@@ -59,11 +64,10 @@ void CMPGAPhototaxisObstacleLoopFunctions::PostStep() {
         }
 
         // Get points for closeness to light, as long as the robot did not collide.
-        Real normalizedDistance = (10.0 - differenceVector.Length()) / 10.0;
-        if (normalizedDistance > 1.0 or normalizedDistance < 0.0) {
-            LOG << "Got distance: " << normalizedDistance << std::endl;
-        }
-        m_iScore += normalizedDistance * normalizedDistance;
+
+        Real normalizedDistance = 1.0 - differenceVector.Length() / maxDistance;
+
+        m_iScore += pow(normalizedDistance, FITNESS_POWER);
     }
 }
 
