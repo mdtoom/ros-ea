@@ -8,8 +8,8 @@ reset_on_extinction   = False
 
 [StateMachineGenome]
 # node activation options
-activation_default      = sigmoid
-activation_options      = sigmoid
+activation_default      = tanh
+activation_options      = tanh
 activation_mutate_rate  = 0.0
 
 aggregation_default     = sum
