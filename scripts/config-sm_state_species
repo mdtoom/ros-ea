@@ -42,7 +42,7 @@ transition_add_prob     = 0.05
 transition_delete_prob  = 0.05
 
 # network parameters
-num_initial_states      = 1
+num_initial_states      = 5
 num_inputs              = 24
 num_outputs             = 2
 max_num_states          = 5
@@ -79,7 +79,7 @@ condition_comparator_replace_rate     = 0.1
 
 [MarkAllStagnation]
 species_fitness_func = max
-stagnation_split_interval       = 5
+stagnation_split_interval       = 100
 
 [ReproductionStateMachineOnly]
 elitism            = 2
