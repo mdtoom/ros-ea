@@ -4,9 +4,11 @@ import sys
 from Queue import Queue
 
 import rospy
-from examples.experiment_functions import FeedForwardNetworkController, StateMachineController
+from examples.experiment_functions import SMControllerFactory, FFControllerFactory
 from neat.activations import ActivationFunctionSet
 from neat.aggregations import AggregationFunctionSet
+from neat.state_machine_network import StateMachineNetwork
+from neat.state_selector_network import StateSelectorNetwork
 from std_srvs.srv import Empty
 from ma_evolution.msg import Score
 from ma_evolution.msg import ProximityList
@@ -15,14 +17,19 @@ from geometry_msgs.msg import Twist
 from ma_evolution.srv import SimScore
 from ma_evolution.srv import Done
 
-from message_parsing import NEATROSEncoder, SMROSEncoder
-
+from message_parsing import NEATROSEncoder, SMROSEncoder, SMSROSEncoder
 
 DONE_CHECK_INTERVAL = 20
 
 
 class ArgosExperimentRunner:
     """ This class runs an experiment by connecting to argos evaluating a genome. """
+
+    controller_selector = {
+        'feed-forward': (FFControllerFactory(), NEATROSEncoder),
+        'state-machine': (SMControllerFactory(StateMachineNetwork), SMROSEncoder),
+        'state-selector': (SMControllerFactory(StateSelectorNetwork), SMSROSEncoder)
+    }
 
     def __init__(self, num_steps, controller_nm, num_inputs, num_outputs, clear_queue_on_new_gen=True):
 
@@ -37,7 +44,7 @@ class ArgosExperimentRunner:
 
         # These parameters are modifiable using the param server and the service update_params.
         self.num_steps = 0
-        self.controller_class = None
+        self.controller_factory = None
         self.decoder = None
         self.config = None
 
@@ -119,8 +126,7 @@ class ArgosExperimentRunner:
 
     def set_new_controller(self, enc_genome):
         genome = self.decoder.decode(enc_genome)
-        self.current_controller = self.controller_class()
-        self.current_controller.reset(genome, self.config)
+        self.current_controller = self.controller_factory.generate(genome, self.config)
         self.current_genome = enc_genome
         self.time_steps = 0
 
@@ -130,16 +136,11 @@ class ArgosExperimentRunner:
         """ This function updates the runner with the current parameters."""
 
         # Update controller type
-        controller_nm = rospy.get_param('controller')
-        if controller_nm == 'feed-forward':
-            self.controller_class = FeedForwardNetworkController
-            self.decoder = NEATROSEncoder
-            rospy.loginfo('Going for feed-forward controller')
-        elif controller_nm == 'state-machine':
-            self.controller_class = StateMachineController
-            self.decoder = SMROSEncoder
-            rospy.loginfo('Going for state-machine controller')
-        else:
+        try:
+            controller_nm = rospy.get_param('controller')
+            self.controller_factory, self.decoder = self.controller_selector[controller_nm]
+            rospy.loginfo('Going for {0}'.format(self.controller_factory))
+        except KeyError:
             rospy.logerr('Exiting because invalid controller type provided')
             exit(1)
 

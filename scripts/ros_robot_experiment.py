@@ -190,6 +190,7 @@ class ROSSimultaneRobotExperiment(ROSRobotExperiment):
         for genome_id, genome in genomes:
 
             scores = [sc.retrieved_scores[genome_id] for sc in self.sim_controllers]
+            assert len(scores) == len(self.sim_controllers)
             final_score = sum(scores) / len(scores)
             score_dict[genome_id] = scores + [final_score]
 
