@@ -10,12 +10,9 @@ from neat.aggregations import AggregationFunctionSet
 from neat.state_machine_network import StateMachineNetwork
 from neat.state_selector_network import StateSelectorNetwork
 from std_srvs.srv import Empty
-from ma_evolution.msg import Score
-from ma_evolution.msg import ProximityList
-from ma_evolution.msg import LightList
+from ma_evolution.msg import Score, ProximityList, LightList
 from geometry_msgs.msg import Twist
-from ma_evolution.srv import SimScore
-from ma_evolution.srv import Done
+from ma_evolution.srv import SimScore, Done, StateRequest, StateRequestResponse
 
 from message_parsing import NEATROSEncoder, SMROSEncoder, SMSROSEncoder
 
@@ -53,6 +50,10 @@ class ArgosExperimentRunner:
         rospy.init_node('executioner', anonymous=True)
         rospy.Service('update_params', Empty, self.param_update)
 
+        # Service for getting the states the robot controller was in (doesn't work for feed-forward controller)
+        self.logged_states = []
+        rospy.Service('states_request', StateRequest, self.log_request_callback)
+
         # Set the initial parameters in the server.
         rospy.set_param('controller', controller_nm)
         rospy.set_param('num_inputs', num_inputs)
@@ -65,6 +66,10 @@ class ArgosExperimentRunner:
         self.cmdVelPub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
         rospy.Subscriber('proximity', ProximityList, self.proximity_callback)
         rospy.Subscriber('light', LightList, self.light_callback)
+
+    def log_request_callback(self, _):
+
+        return StateRequestResponse(self.logged_states)
 
     def genome_callback(self, data):
 
@@ -121,6 +126,7 @@ class ArgosExperimentRunner:
     def finish_simulation(self):
         score = self.get_score()
         self.publish_score(self.current_genome.key, self.current_genome.gen_hash, score)
+        self.logged_states = self.current_controller.get_states()
 
         self.current_controller = None
 
