@@ -49,12 +49,6 @@ void CMPGAPhototaxisObstacleLoopFunctions::PostStep() {
 
     CMPGAPhototaxisLoopFunctions::PostStep();
 
-    CPositionalEntity& light = (CPositionalEntity&) CSimulator::GetInstance().GetSpace().GetEntity("light");
-    CVector3 robotPosition = m_pcFootBot->GetEmbodiedEntity().GetOriginAnchor().Position;
-    CVector3 lightPosition = light.GetPosition();
-    lightPosition.SetZ(robotPosition.GetZ());
-    CVector3 differenceVector = robotPosition - lightPosition;
-
     if (!m_bDone)
     {
         // After a collision do not update the score anymore.
@@ -63,11 +57,7 @@ void CMPGAPhototaxisObstacleLoopFunctions::PostStep() {
             m_bDone = true;
         }
 
-        // Get points for closeness to light, as long as the robot did not collide.
-
-        Real normalizedDistance = 1.0 - differenceVector.Length() / maxDistance;
-
-        m_iScore += pow(normalizedDistance, FITNESS_POWER);
+        m_iScore += CalculateStepScore();
     }
 }
 
@@ -78,6 +68,23 @@ Real CMPGAPhototaxisObstacleLoopFunctions::Score() {
    /* The performance is simply the distance of the robot to the origin */
 
     return m_iScore;
+}
+
+Real CMPGAPhototaxisObstacleLoopFunctions::CalculateStepScore()
+{
+    LOG << "using old " << std::endl;
+    LOG.Flush();
+    CPositionalEntity& light = (CPositionalEntity&) CSimulator::GetInstance().GetSpace().GetEntity("light");
+    CVector3 robotPosition = m_pcFootBot->GetEmbodiedEntity().GetOriginAnchor().Position;
+    CVector3 lightPosition = light.GetPosition();
+    lightPosition.SetZ(robotPosition.GetZ());
+    CVector3 differenceVector = robotPosition - lightPosition;
+
+    // Get points for closeness to light, as long as the robot did not collide.
+
+    Real normalizedDistance = 1.0 - differenceVector.Length() / maxDistance;
+
+    return pow(normalizedDistance, FITNESS_POWER);
 }
 
 /****************************************/

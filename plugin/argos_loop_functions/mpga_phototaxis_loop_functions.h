@@ -28,7 +28,7 @@ class CMPGAPhototaxisLoopFunctions : public CLoopFunctions {
 public:
 
     CMPGAPhototaxisLoopFunctions();
-    virtual ~CMPGAPhototaxisLoopFunctions() = default;
+    virtual ~CMPGAPhototaxisLoopFunctions();
 
     virtual void Init(TConfigurationNode& t_node);
 

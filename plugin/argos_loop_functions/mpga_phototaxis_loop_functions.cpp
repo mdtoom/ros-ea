@@ -11,6 +11,11 @@ CMPGAPhototaxisLoopFunctions::CMPGAPhototaxisLoopFunctions() :
 
 }
 
+CMPGAPhototaxisLoopFunctions::~CMPGAPhototaxisLoopFunctions()
+{
+    delete m_pcFootBot;
+}
+
 void CMPGAPhototaxisLoopFunctions::SetStartLocation() {
 
     m_vecResetLocation.Position.FromSphericalCoords(
@@ -60,17 +65,6 @@ void CMPGAPhototaxisLoopFunctions::Init(TConfigurationNode& t_node) {
       "argos_ros_bot"    // controller id as set in the XML
       );
     AddEntity(*m_pcFootBot);
-
-    /*
-    * Create the initial setup for each trial
-    * The robot is placed 4.5 meters away from the light
-    * (which is in the origin) at angles
-    * { PI/12, 2*PI/12, 3*PI/12, 4*PI/12, 5*PI/12 }
-    * wrt to the world reference.
-    * Also, the rotation of the robot is chosen at random
-    * from a uniform distribution.
-    */
-
     Reset();
 }
 
@@ -103,7 +97,6 @@ void CMPGAPhototaxisLoopFunctions::Reset() {
 
 void CMPGAPhototaxisLoopFunctions::PostStep()
 {
-
     CVector3 robotPosition = m_pcFootBot->GetEmbodiedEntity().GetOriginAnchor().Position;
 
     geometry_msgs::Point point;

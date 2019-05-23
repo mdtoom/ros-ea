@@ -34,7 +34,9 @@ public:
     /* Calculates the performance of the robot in a trial */
     virtual Real Score() override;
 
-private:
+protected:
+
+    virtual Real CalculateStepScore();
 
     float m_iScore;
 };
