@@ -11,6 +11,14 @@
 #include <vector>
 
 
+/**
+ * This function checks whether the given element is in the vector.
+ * @param vector    - Vector to check.
+ * @param element   - Element to find in vector.
+ * @return          - True if the element is in the vector.
+ */
+template <class T> bool inVector(std::vector<T> vector, T element);
+
 
 class CMPGAPhototaxisStateDependentFitnessFunction : public CMPGAPhototaxisObstacleLoopFunctions
 {
@@ -26,7 +34,6 @@ protected:
 
 private:
 
-
     /**
      * This function checks whether the given location is within the 2D borders of the environment.
      * @param loc           - Location, Note that z value is not taken into account.
@@ -36,9 +43,9 @@ private:
     bool within2DBorders(CVector3 &loc, CRange<CVector3> &areaLimits);
 
     // These to vectors need to be of the same length and the index of a location in the fitness measure location
-    // should point to the distance of that point in the other vector.
-    std::vector<CVector3> m_vFitnessMeasureLocation;
-    std::vector<Real> m_vLocationDistance;
+    // should point to the fitness of that point in the other vector.
+    std::vector<CVector2> m_vFitnessMeasureLocation;
+    std::vector<Real> m_vLocationFitness;
 };
 
 

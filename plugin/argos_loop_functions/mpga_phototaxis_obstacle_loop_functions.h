@@ -36,9 +36,18 @@ public:
 
 protected:
 
+    /**
+     * Calculate the fitness based on a distance to the object.
+     * @param distance      - distance to object.
+     * @return              - Fitness based on distance.
+     */
+    virtual Real calculateFitness(Real distance);
+
     virtual Real CalculateStepScore();
 
-    float m_iScore;
+    Real m_fScore;
+
+    Real m_fMaxDistance;
 };
 
 #endif

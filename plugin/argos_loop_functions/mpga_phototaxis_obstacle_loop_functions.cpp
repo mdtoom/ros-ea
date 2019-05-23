@@ -10,18 +10,17 @@
 
 using namespace argos;
 
-#define FITNESS_POWER 5            // This define is used to indicate the shape of the fitness function.
+#define FITNESS_POWER 3            // This define is used to indicate the shape of the fitness function.
 
 const Real maxDistance = 11.0;      // Constant used to indicate the max distance from the robot to the light.
 
-CMPGAPhototaxisObstacleLoopFunctions::CMPGAPhototaxisObstacleLoopFunctions() : m_iScore(0)
+CMPGAPhototaxisObstacleLoopFunctions::CMPGAPhototaxisObstacleLoopFunctions() : m_fScore(0), m_fMaxDistance(maxDistance)
 { }
 
 void CMPGAPhototaxisObstacleLoopFunctions::SetStartLocation() {
 
-    m_vecResetLocation.Position.SetX(0);
+    m_vecResetLocation.Position.SetX(0.0);
     m_vecResetLocation.Position.SetY(2.5);
-
 
     /* Set orientation */
     CRadians cOrient = m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE);
@@ -39,7 +38,7 @@ void CMPGAPhototaxisObstacleLoopFunctions::Reset() {
 
     CMPGAPhototaxisLoopFunctions::Reset();
 
-    m_iScore = 0;
+    m_fScore = 0;
 }
 
 /****************************************/
@@ -57,7 +56,7 @@ void CMPGAPhototaxisObstacleLoopFunctions::PostStep() {
             m_bDone = true;
         }
 
-        m_iScore += CalculateStepScore();
+        m_fScore += CalculateStepScore();
     }
 }
 
@@ -67,13 +66,11 @@ void CMPGAPhototaxisObstacleLoopFunctions::PostStep() {
 Real CMPGAPhototaxisObstacleLoopFunctions::Score() {
    /* The performance is simply the distance of the robot to the origin */
 
-    return m_iScore;
+    return m_fScore;
 }
 
 Real CMPGAPhototaxisObstacleLoopFunctions::CalculateStepScore()
 {
-    LOG << "using old " << std::endl;
-    LOG.Flush();
     CPositionalEntity& light = (CPositionalEntity&) CSimulator::GetInstance().GetSpace().GetEntity("light");
     CVector3 robotPosition = m_pcFootBot->GetEmbodiedEntity().GetOriginAnchor().Position;
     CVector3 lightPosition = light.GetPosition();
@@ -81,11 +78,15 @@ Real CMPGAPhototaxisObstacleLoopFunctions::CalculateStepScore()
     CVector3 differenceVector = robotPosition - lightPosition;
 
     // Get points for closeness to light, as long as the robot did not collide.
+    return calculateFitness(differenceVector.Length());
+}
 
-    Real normalizedDistance = 1.0 - differenceVector.Length() / maxDistance;
-
+Real CMPGAPhototaxisObstacleLoopFunctions::calculateFitness(Real distance)
+{
+    Real normalizedDistance = 1.0 - distance / m_fMaxDistance;
     return pow(normalizedDistance, FITNESS_POWER);
 }
+
 
 /****************************************/
 /****************************************/
