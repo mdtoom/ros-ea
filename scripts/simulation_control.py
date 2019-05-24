@@ -1,8 +1,13 @@
+from time import sleep
+
 import rospy
+import roslaunch
 from ma_evolution.msg import Score
 from ma_evolution.srv import SimScore
 from ma_evolution.srv import Trajectory
 from std_srvs.srv import Empty
+
+from argos_experiment_runner import controller_selector
 
 
 class SimulationCommunicator:
@@ -52,3 +57,46 @@ class SimulationCommunicator:
         rospy.wait_for_service(self.namespace + 'update_params')
         service = rospy.ServiceProxy(self.namespace + 'update_params', Empty)
         service()
+
+    def run_genome(self, encoded_genome):
+        self.reset()
+
+        self.condition_lock.acquire()
+        self.publish_genome(encoded_genome)
+
+        while not self.condition_lock.wait(1.0):
+            if len(self.retrieved_scores) == 1:
+                break
+
+            if rospy.is_shutdown():
+                exit(1)
+        self.condition_lock.release()
+
+
+class SimulationController:
+    """ This class launches and communicates with all activate simulation runners."""
+
+    def __init__(self, pkg_nm, launch_file, controller_nm):
+
+        try:
+            self.genome_encoder = controller_selector[controller_nm][1]
+        except KeyError:
+            print('Controller type not known.')
+
+        launch_args = ['controller:=' + controller_nm]
+        arg_list = [pkg_nm, launch_file] + launch_args
+        uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+        roslaunch.configure_logging(uuid)
+        arg_list_param = roslaunch.rlutil.resolve_launch_arguments(arg_list)
+        self.launch = roslaunch.parent.ROSLaunchParent(uuid, [(arg_list_param[0], launch_args)])
+
+    def start_simulators(self):
+        """ This function starts the simulators."""
+        self.launch.start()
+
+        sleep(2)
+        rospy.loginfo("started Simulators")
+
+    def stop_simulators(self):
+        """ This function stops the simulators and make this object unusable."""
+        self.launch.shutdown()

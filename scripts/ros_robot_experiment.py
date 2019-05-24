@@ -6,7 +6,7 @@ from threading import Condition
 import rospy
 from examples.experiment_template import SingleExperiment
 
-from simulation_communication import SimulationCommunicator
+from simulation_control import SimulationCommunicator
 from tools.score_saver import ScoreSaver
 
 

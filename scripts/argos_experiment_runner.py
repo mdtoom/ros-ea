@@ -18,15 +18,15 @@ from message_parsing import NEATROSEncoder, SMROSEncoder, SMSROSEncoder
 
 DONE_CHECK_INTERVAL = 20
 
+controller_selector = {
+    'feed-forward': (FFControllerFactory(), NEATROSEncoder),
+    'state-machine': (SMControllerFactory(StateMachineNetwork), SMROSEncoder),
+    'state-selector': (SMControllerFactory(StateSelectorNetwork), SMSROSEncoder)
+}
+
 
 class ArgosExperimentRunner:
     """ This class runs an experiment by connecting to argos evaluating a genome. """
-
-    controller_selector = {
-        'feed-forward': (FFControllerFactory(), NEATROSEncoder),
-        'state-machine': (SMControllerFactory(StateMachineNetwork), SMROSEncoder),
-        'state-selector': (SMControllerFactory(StateSelectorNetwork), SMSROSEncoder)
-    }
 
     def __init__(self, num_steps, controller_nm, num_inputs, num_outputs, clear_queue_on_new_gen=True):
 
@@ -84,10 +84,10 @@ class ArgosExperimentRunner:
 
         self.genome_queue.put(data)
 
-    def proximity_callback(self, proximityList):
-        self.proximityList = proximityList
+    def proximity_callback(self, proximity_list):
+        self.proximityList = proximity_list
 
-    def light_callback(self, lightList):
+    def light_callback(self, light_list):
 
         twist = Twist()
         twist.linear.x = 0  # Forward speed
@@ -97,7 +97,7 @@ class ArgosExperimentRunner:
 
             # Extract the sensor data.
             proximities = [proximity.value for proximity in self.proximityList.proximities]
-            lights = [light.value for light in lightList.lights]
+            lights = [light.value for light in light_list.lights]
             observation = proximities + lights
 
             # Execute the controller given the data.
@@ -144,7 +144,7 @@ class ArgosExperimentRunner:
         # Update controller type
         try:
             controller_nm = rospy.get_param('controller')
-            self.controller_factory, self.decoder = self.controller_selector[controller_nm]
+            self.controller_factory, self.decoder = controller_selector[controller_nm]
             rospy.loginfo('Going for {0}'.format(self.controller_factory))
         except KeyError:
             rospy.logerr('Exiting because invalid controller type provided')

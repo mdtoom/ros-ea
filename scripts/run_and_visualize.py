@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import rospy
 
 from message_parsing import NEATROSEncoder, SMROSEncoder
-from ros_robot_experiment import SimulationCommunicator
+from genome_evaluators import SimulationCommunicator
 from tools.genome_analysis_tool import GenomeAnalysisTool
 
 
@@ -25,7 +25,8 @@ class ScenarioVisualiser(GenomeAnalysisTool):
         num = 0
         for genome in self.genomes:
 
-            self.run_genome(sc, genome)
+            encoded_genome = self.encoder.encode(genome, 0)
+            sc.run_genome(encoded_genome)
 
             # Get the result.
             trajectory = sc.get_trajectory()
