@@ -6,6 +6,7 @@ from threading import Condition
 import rospy
 from examples.experiment_template import SingleExperiment
 
+from run_and_visualize import ScenarioVisualiser
 from simulation_control import SimulationCommunicator
 from tools.score_saver import ScoreSaver
 
@@ -108,6 +109,14 @@ class ROSRobotExperiment(SingleExperiment):
             retrieved_scores.update(sc.retrieved_scores)
 
         return retrieved_scores
+
+    def run_full_experiment(self, num_runs):
+
+        for i in range(num_runs):
+            self.run(self.exp_name + str(i))
+
+        sv = ScenarioVisualiser(self.sim_controllers, self.base_directory, self.genome_encoder)
+        sv.visualize_winner_paths()
 
 
 class ROSSimultaneRobotExperiment(ROSRobotExperiment):

@@ -8,14 +8,12 @@ import neat
 
 from ros_robot_experiment import ROSRobotExperiment, ROSSimultaneRobotExperiment
 from message_parsing import NEATROSEncoder
-from run_and_visualize import ScenarioVisualiser
 from simulation_control import SimulationController
 from tools.draw_functions import draw_nn
 
 
 def two_layer_run():
 
-    experiment_name = 'NEAT'
     num_generations = 1
     num_runs = 1
     config_location = 'config-feedforward-2-hidden-layers'
@@ -29,22 +27,17 @@ def two_layer_run():
                          config_path)
 
     sim_control = SimulationController('ma_evolution', 'sim_phototaxis_obst_new_fitness.launch', 'feed-forward')
-
+    sim_control.start_simulators()
     try:
-        sim_control.start_simulators()
 
-        experiment = ROSRobotExperiment(config, num_generations, NEATROSEncoder, experiment_name,
+        experiment = ROSRobotExperiment(config, num_generations, NEATROSEncoder,
                                                  base_directory=base_directory, cntrl_draw_func=draw_nn)
+        experiment.run_full_experiment(num_runs)
 
-        for i in range(num_runs):
-            experiment.run(experiment_name + str(i))
-
-        sv = ScenarioVisualiser(experiment.sim_controllers, base_directory, NEATROSEncoder)
-        sv.visualize_winner_paths()
-
-        sim_control.stop_simulators()
     except rospy.ROSInterruptException:
         pass
+    finally:
+        sim_control.stop_simulators()
 
 
 if __name__ == '__main__':
