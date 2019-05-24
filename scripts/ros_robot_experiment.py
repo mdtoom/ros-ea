@@ -11,29 +11,40 @@ from simulation_control import SimulationCommunicator
 from tools.score_saver import ScoreSaver
 
 
+class GenomeEvaluator:
+    """ This class takes care of evaluating the genomes. Note it needs to be in this file with the experiment
+    (most likely because the condition)
+    """
+
+    def __init__(self, genome_encoder):
+
+        # Find the running simulation nodes
+        self.condition_lock = Condition()
+        self.genome_encoder = genome_encoder
+        search_string = 'score_topic'
+        score_topics = [topic[0] for topic in rospy.get_published_topics() if search_string in topic[0]]
+        name_spaces = [topic.replace(search_string, '') for topic in score_topics]
+        self.sim_controllers = [SimulationCommunicator(ns, genome_encoder.get_message_type(), self.condition_lock)
+                           for ns in name_spaces]
+        time.sleep(1)       # Sleep is required for initialisation
+
+
 class ROSRobotExperiment(SingleExperiment):
     """ This class evaluates the genomes by sending them to a ROS node, which evaluates them."""
 
-    def __init__(self, learning_config, num_generations, genome_encoder,
+    def __init__(self, learning_config, num_generations, controller_keeper,
                  exp_name='', num_trails=1, base_directory='', cntrl_draw_func=None):
         """ Note the additional parameter genome_encoder, which encodes a genome for sending. """
 
         SingleExperiment.__init__(self, learning_config, num_generations, exp_name, num_trails,
                                   base_directory, cntrl_draw_func)
-        self.genome_encoder = genome_encoder
+        self.controllers = controller_keeper
+        self.genome_encoder = self.controllers.genome_encoder
 
         # Initialise the variables needed to communicate with the others trough ROS.
-        self.condition_lock = Condition()
         self.gen_hash = 0
         rospy.init_node('evolutionary_algorithm', anonymous=True)
 
-        # Find the running simulation nodes
-        search_string = 'score_topic'
-        score_topics = [topic[0] for topic in rospy.get_published_topics() if search_string in topic[0]]
-        name_spaces = [topic.replace(search_string, '') for topic in score_topics]
-        self.sim_controllers = [SimulationCommunicator(ns, genome_encoder.get_message_type(), self.condition_lock)
-                                for ns in name_spaces]
-        time.sleep(1)       # Sleep is required for initialisation
 
     def send_genomes(self, genomes):
         """ This function resends the genomes, which have not yet replied. """
@@ -46,8 +57,8 @@ class ROSRobotExperiment(SingleExperiment):
 
                 #print('Sending genome {0} to simulation {1}'.format(genome_id, controller_count))
                 ros_encoded_genome = self.genome_encoder.encode(genome, self.gen_hash)
-                self.sim_controllers[controller_count].publish_genome(ros_encoded_genome)
-                controller_count = (controller_count + 1) % len(self.sim_controllers)
+                self.controllers.sim_controllers[controller_count].publish_genome(ros_encoded_genome)
+                controller_count = (controller_count + 1) % len(self.controllers.sim_controllers)
 
     def eval_genomes(self, genomes, config):
         start_time = time.time()
@@ -56,7 +67,7 @@ class ROSRobotExperiment(SingleExperiment):
         self.reset_robots()
 
         # Wait until all scores came back.
-        self.condition_lock.acquire()
+        self.controllers.condition_lock.acquire()
 
         previous_received = 0
         while self.not_evaluated_all(genomes):
@@ -71,9 +82,9 @@ class ROSRobotExperiment(SingleExperiment):
             if rospy.is_shutdown():
                 raise rospy.ROSInterruptException()
 
-            self.condition_lock.wait(10.0)
+            self.controllers.condition_lock.wait(10.0)
 
-        self.condition_lock.release()
+        self.controllers.condition_lock.release()
 
         self.set_scores(genomes)
 
@@ -95,17 +106,17 @@ class ROSRobotExperiment(SingleExperiment):
 
     def reset_robots(self):
 
-        for sc in self.sim_controllers:
+        for sc in self.controllers.sim_controllers:
             sc.reset()
 
     def count_received(self):
-        return sum(len(sc.retrieved_scores) for sc in self.sim_controllers)
+        return sum(len(sc.retrieved_scores) for sc in self.controllers.sim_controllers)
 
     def aggregate_scores(self):
         """ This function aggregates the scores of the simulation runners"""
         retrieved_scores = {}
 
-        for sc in self.sim_controllers:
+        for sc in self.controllers.sim_controllers:
             retrieved_scores.update(sc.retrieved_scores)
 
         return retrieved_scores
@@ -115,7 +126,7 @@ class ROSRobotExperiment(SingleExperiment):
         for i in range(num_runs):
             self.run(self.exp_name + str(i))
 
-        sv = ScenarioVisualiser(self.sim_controllers, self.base_directory, self.genome_encoder)
+        sv = ScenarioVisualiser(self.controllers.sim_controllers, self.base_directory, self.genome_encoder)
         sv.visualize_winner_paths()
 
 
@@ -127,11 +138,11 @@ class ROSSimultaneRobotExperiment(ROSRobotExperiment):
         ROSRobotExperiment.__init__(self, learning_config, num_generations, genome_encoder, exp_name,
                                     num_trails, base_directory, cntrl_draw_func)
 
-        self.score_saver = ScoreSaver(self.base_directory + self.exp_name + '_scores.csv', len(self.sim_controllers))
+        self.score_saver = ScoreSaver(self.base_directory + self.exp_name + '_scores.csv', len(self.controllers.sim_controllers))
 
     def not_evaluated_all(self, genomes):
 
-        for sc in self.sim_controllers:
+        for sc in self.controllers.sim_controllers:
             if len(sc.retrieved_scores) != len(genomes):
                 return True
 
@@ -139,7 +150,7 @@ class ROSSimultaneRobotExperiment(ROSRobotExperiment):
 
     def send_genomes(self, genomes):
         """ This function resends the genomes for all genomes not yet received. """
-        for sc in self.sim_controllers:
+        for sc in self.controllers.sim_controllers:
             for genome_id, genome in genomes:
 
                 assert genome_id == genome.key  # Safety check, so both can be used as keys.
@@ -154,8 +165,8 @@ class ROSSimultaneRobotExperiment(ROSRobotExperiment):
         score_dict = {}     # Used for storing the scores.
         for genome_id, genome in genomes:
 
-            scores = [sc.retrieved_scores[genome_id] for sc in self.sim_controllers]
-            assert len(scores) == len(self.sim_controllers)
+            scores = [sc.retrieved_scores[genome_id] for sc in self.controllers.sim_controllers]
+            assert len(scores) == len(self.controllers.sim_controllers)
             final_score = sum(scores) / len(scores)
             score_dict[genome_id] = scores + [final_score]
 
@@ -168,7 +179,7 @@ class ROSSimultaneRobotExperiment(ROSRobotExperiment):
         """ This function aggregates the scores of the simulation runners"""
         retrieved_scores = []
 
-        for sc in self.sim_controllers:
+        for sc in self.controllers.sim_controllers:
             retrieved_scores.extend(sc.retrieved_scores[key] for key in sc.retrieved_scores)
 
         return retrieved_scores

@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import rospy
 
 from message_parsing import NEATROSEncoder, SMROSEncoder
-from genome_evaluators import SimulationCommunicator
+from simulation_control import SimulationCommunicator
 from tools.genome_analysis_tool import GenomeAnalysisTool
 
 

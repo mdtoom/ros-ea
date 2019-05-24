@@ -6,7 +6,7 @@ import rospy
 
 import neat
 
-from ros_robot_experiment import ROSRobotExperiment, ROSSimultaneRobotExperiment
+from ros_robot_experiment import ROSRobotExperiment, ROSSimultaneRobotExperiment, GenomeEvaluator
 from message_parsing import NEATROSEncoder
 from simulation_control import SimulationController
 from tools.draw_functions import draw_nn
@@ -29,8 +29,8 @@ def two_layer_run():
     sim_control = SimulationController('ma_evolution', 'sim_phototaxis_obst_new_fitness.launch', 'feed-forward')
     sim_control.start_simulators()
     try:
-
-        experiment = ROSRobotExperiment(config, num_generations, NEATROSEncoder,
+        controller_keeper = GenomeEvaluator(NEATROSEncoder)
+        experiment = ROSRobotExperiment(config, num_generations, controller_keeper,
                                                  base_directory=base_directory, cntrl_draw_func=draw_nn)
         experiment.run_full_experiment(num_runs)
 
