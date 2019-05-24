@@ -8,13 +8,13 @@ class ScoreSaver:
     generation id score_1 score_2 ... score_n
     """
 
-    def __init__(self, file_location, num_scores):
+    def __init__(self, file_location, namespaces):
         self.file_location = file_location
 
         # Write the header to file.
         with open(self.file_location, 'w') as csvFile:
             writer = csv.writer(csvFile)
-            csv_header = ['generation', 'identifier'] + ['score_' + str(i) for i in range(num_scores)] + ['final_score']
+            csv_header = ['generation', 'identifier'] + ['score_' + str(ns) for ns in namespaces] + ['final_score']
             writer.writerow(csv_header)
 
     def write_scores(self, generation, score_table):
@@ -25,11 +25,5 @@ class ScoreSaver:
         with open(self.file_location, 'a') as csvFile:
             writer = csv.writer(csvFile)
 
-            csv_lines = [[generation, identifier] + scores for identifier, scores in iteritems(score_table) ]
+            csv_lines = [[generation, identifier] + scores for identifier, scores in iteritems(score_table)]
             writer.writerows(csv_lines)
-
-
-
-
-
-

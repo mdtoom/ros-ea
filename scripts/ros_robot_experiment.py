@@ -7,7 +7,6 @@ import rospy
 from examples.experiment_template import SingleExperiment
 
 from run_and_visualize import ScenarioVisualiser
-from run_and_store_states import StatesToCSV
 from simulation_control import SimulationCommunicator
 from tools.score_saver import ScoreSaver
 
@@ -29,6 +28,13 @@ class GenomeEvaluator:
                            for ns in name_spaces]
         time.sleep(1)       # Sleep is required for initialisation
 
+    def get_namespaces(self):
+        return [sm.namespace for sm in self.sim_controllers ]
+
+    def finished(self):
+
+        for sm in self.sim_controllers:
+            sm.genome_publisher.unregister()
 
 class ROSRobotExperiment(SingleExperiment):
     """ This class evaluates the genomes by sending them to a ROS node, which evaluates them."""
@@ -139,7 +145,8 @@ class ROSSimultaneRobotExperiment(ROSRobotExperiment):
         ROSRobotExperiment.__init__(self, learning_config, num_generations, genome_encoder, exp_name,
                                     num_trails, base_directory, cntrl_draw_func)
 
-        self.score_saver = ScoreSaver(self.base_directory + self.exp_name + '_scores.csv', len(self.controllers.sim_controllers))
+        self.score_saver = ScoreSaver(self.base_directory + self.exp_name + '_scores.csv',
+                                      self.controllers.get_namespaces())
 
     def not_evaluated_all(self, genomes):
 

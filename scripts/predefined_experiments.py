@@ -11,6 +11,7 @@ def nn_based_experiment(launch_file, config, base_directory, num_generations, nu
                         experiment_class=ROSSimultaneRobotExperiment):
     sim_control = SimulationController('ma_evolution', launch_file, 'feed-forward')
     sim_control.start_simulators()
+    controller_keeper = None
     try:
         controller_keeper = GenomeEvaluator(NEATROSEncoder)
         experiment = experiment_class(config, num_generations, controller_keeper,
@@ -21,12 +22,14 @@ def nn_based_experiment(launch_file, config, base_directory, num_generations, nu
         pass
     finally:
         sim_control.stop_simulators()
+        controller_keeper.finished()
 
 
 def ss_based_experiment(launch_file, config, base_directory, num_generations, num_runs,
                         experiment_class=ROSSimultaneRobotExperiment):
     sim_control = SimulationController('ma_evolution', launch_file, 'state-selector')
     sim_control.start_simulators()
+    controller_keeper = None
     try:
         controller_keeper = GenomeEvaluator(SMSROSEncoder)
         experiment = experiment_class(config, num_generations, controller_keeper, base_directory=base_directory)
@@ -39,12 +42,14 @@ def ss_based_experiment(launch_file, config, base_directory, num_generations, nu
         pass
     finally:
         sim_control.stop_simulators()
+        controller_keeper.finished()
 
 
 def sm_based_experiment(launch_file, config, base_directory, num_generations, num_runs,
                         experiment_class=ROSSimultaneRobotExperiment):
     sim_control = SimulationController('ma_evolution', launch_file, 'state-machine')
     sim_control.start_simulators()
+    controller_keeper = None
     try:
         controller_keeper = GenomeEvaluator(SMROSEncoder)
         experiment = experiment_class(config, num_generations, controller_keeper,
@@ -58,3 +63,4 @@ def sm_based_experiment(launch_file, config, base_directory, num_generations, nu
         pass
     finally:
         sim_control.stop_simulators()
+        controller_keeper.finished()
