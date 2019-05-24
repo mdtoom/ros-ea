@@ -52,8 +52,8 @@ class SuperExagerate(ExaggerateScenarioFourExperiment):
 
 
 if __name__ == '__main__':
-    num_generations = 1
-    num_runs = 1
+    num_generations = 100
+    num_runs = 5
     launch_file = 'sim_phototaxis_obst_multiple_sm.launch'
 
     simulation_base_directory = expanduser("~") + '/Desktop/four_exaggerate/'
