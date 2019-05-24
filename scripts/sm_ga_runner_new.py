@@ -7,24 +7,20 @@ import os
 from os.path import expanduser
 
 import neat
-import rospy
 
 from neat.reproduction_state_machine import ReproductionStateMachineOnly, StateSeparatedSpeciesSet
 from neat.stagnation import MarkAllStagnation
 from neat.state_machine_full_genome import StateMachineFullGenome
 
-from message_parsing import SMROSEncoder
-from ros_robot_experiment import ROSSimultaneRobotExperiment
-from run_and_visualize import ScenarioVisualiser
-from tools.draw_functions import draw_sm
+from predefined_experiments import sm_based_experiment
 
 
 def run_sm_new():
     config_location = 'config-sm_state_species'
-    experiment_name = 'SM_state_dependent'
     num_generations = 100
     num_runs = 5
     base_directory = expanduser("~") + '/Desktop/sm_new/'
+    launch_file = 'sim_phototaxis_obst_new_fitness.launch'
 
     # Create learning configuration.
     local_dir = os.path.dirname(__file__)
@@ -35,18 +31,7 @@ def run_sm_new():
                          MarkAllStagnation,
                          config_path)
 
-    try:
-        experiment = ROSSimultaneRobotExperiment(config, num_generations, SMROSEncoder, experiment_name,
-                                                 base_directory=base_directory, cntrl_draw_func=draw_sm)
-
-        for i in range(num_runs):
-            experiment.run(experiment_name + str(i))
-
-        sv = ScenarioVisualiser(experiment.sim_controllers, base_directory, SMROSEncoder)
-        sv.visualize_winner_paths()
-
-    except rospy.ROSInterruptException:
-        pass
+    sm_based_experiment(launch_file, config, base_directory, num_generations, num_runs)
 
 
 if __name__ == '__main__':

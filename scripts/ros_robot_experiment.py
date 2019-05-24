@@ -7,6 +7,7 @@ import rospy
 from examples.experiment_template import SingleExperiment
 
 from run_and_visualize import ScenarioVisualiser
+from run_and_store_states import StatesToCSV
 from simulation_control import SimulationCommunicator
 from tools.score_saver import ScoreSaver
 

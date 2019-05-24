@@ -2,22 +2,18 @@
 import os
 from os.path import expanduser
 
-import rospy
-
 import neat
 
-from ros_robot_experiment import ROSRobotExperiment, ROSSimultaneRobotExperiment, GenomeEvaluator
-from message_parsing import NEATROSEncoder
-from simulation_control import SimulationController
-from tools.draw_functions import draw_nn
+from predefined_experiments import nn_based_experiment
 
 
 def two_layer_run():
 
-    num_generations = 1
-    num_runs = 1
+    num_generations = 100
+    num_runs = 5
     config_location = 'config-feedforward-2-hidden-layers'
     base_directory = expanduser("~") + '/Desktop/two-layer-nn/'
+    launch_file = 'sim_phototaxis_obst_new_fitness.launch'
 
     # Create learning configuration.
     local_dir = os.path.dirname(__file__)
@@ -26,18 +22,7 @@ def two_layer_run():
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_path)
 
-    sim_control = SimulationController('ma_evolution', 'sim_phototaxis_obst_new_fitness.launch', 'feed-forward')
-    sim_control.start_simulators()
-    try:
-        controller_keeper = GenomeEvaluator(NEATROSEncoder)
-        experiment = ROSRobotExperiment(config, num_generations, controller_keeper,
-                                                 base_directory=base_directory, cntrl_draw_func=draw_nn)
-        experiment.run_full_experiment(num_runs)
-
-    except rospy.ROSInterruptException:
-        pass
-    finally:
-        sim_control.stop_simulators()
+    nn_based_experiment(launch_file, config, base_directory, num_generations, num_runs)
 
 
 if __name__ == '__main__':

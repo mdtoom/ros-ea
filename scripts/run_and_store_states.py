@@ -6,8 +6,8 @@ from time import sleep
 import rospy
 import csv
 
-from ros_robot_experiment import SimulationCommunicator
 from message_parsing import SMROSEncoder
+from simulation_control import SimulationCommunicator
 from tools.genome_analysis_tool import GenomeAnalysisTool
 from ma_evolution.srv import StateRequest
 
