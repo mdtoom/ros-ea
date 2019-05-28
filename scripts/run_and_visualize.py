@@ -9,6 +9,7 @@ import rospy
 
 from message_parsing import NEATROSEncoder, SMROSEncoder
 from simulation_control import SimulationCommunicator
+from tools.score_saver import ScoreSaver
 from tools.genome_analysis_tool import GenomeAnalysisTool
 
 
@@ -61,12 +62,13 @@ class ScenarioVisualiser(GenomeAnalysisTool):
             avg_score = self.create_visualization(sc, self.base_dir + filename)
             avg_scores.append(avg_score)
 
+        score_saver = ScoreSaver(self.base_dir + 'winner_scores.csv', [sm.namespace for sm in self.sim_controllers])
+
         # Write the line of average scores to a winner score csv file.
         avg_fitness = sum(avg_scores) / len(avg_scores)
         avg_scores.append(avg_fitness)
-        with open(self.base_dir + 'winner_scores.csv', 'a') as csvFile:
-            writer = csv.writer(csvFile)
-            writer.writerow(avg_scores)
+        score_dict = {'w' : avg_scores }
+        score_saver.write_scores('w', score_dict)
 
 
 if __name__ == '__main__':

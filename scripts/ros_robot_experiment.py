@@ -130,8 +130,12 @@ class ROSRobotExperiment(SingleExperiment):
 
     def run_full_experiment(self, num_runs):
 
+        name = self.exp_name
+
         for i in range(num_runs):
-            self.run(self.exp_name + str(i))
+            self.run(name + str(i))
+
+        self.exp_name = name
 
         sv = ScenarioVisualiser(self.controllers.sim_controllers, self.base_directory, self.genome_encoder)
         sv.visualize_winner_paths()
