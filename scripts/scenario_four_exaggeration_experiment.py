@@ -41,7 +41,7 @@ class ExaggerateScenarioFourExperiment(ROSSimultaneRobotExperiment):
         self.score_saver.write_scores(self.p.generation, score_dict)
 
 
-class SuperExagerate(ExaggerateScenarioFourExperiment):
+class SuperExaggerate(ExaggerateScenarioFourExperiment):
 
     def __init__(self, learning_config, num_generations, genome_encoder,
                  exp_name='', num_trails=1, base_directory='', cntrl_draw_func=None):
@@ -51,53 +51,56 @@ class SuperExagerate(ExaggerateScenarioFourExperiment):
         self.exaggeration_factor = 10
 
 
+class SemiSuperExaggerate(ExaggerateScenarioFourExperiment):
+
+    def __init__(self, learning_config, num_generations, genome_encoder,
+                 exp_name='', num_trails=1, base_directory='', cntrl_draw_func=None):
+        ROSSimultaneRobotExperiment.__init__(self, learning_config, num_generations, genome_encoder, exp_name,
+                                             num_trails, base_directory, cntrl_draw_func)
+
+        self.exaggeration_factor = 5
+
+
 if __name__ == '__main__':
     num_generations = 100
     num_runs = 5
-    launch_file = 'sim_phototaxis_obst_multiple_sm.launch'
-
-    simulation_base_directory = expanduser("~") + '/Desktop/four_exaggerate/'
-
-    config_location = 'config-feedforward-no-structural'
-    base_directory = simulation_base_directory + 'obstacle_light_one_layer/'
 
     # Create learning configuration.
+    nn_config_location = 'config-feedforward-no-structural'
     local_dir = os.path.dirname(__file__)
-    config_path = os.path.join(local_dir, config_location)
+    config_path = os.path.join(local_dir, nn_config_location)
     config_nn = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
-                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                         config_path)
-
-    nn_based_experiment(launch_file, config_nn, base_directory, num_generations, num_runs,
-                        ExaggerateScenarioFourExperiment)
-
-    sleep(2)
-
-    config_location = 'config-sm_state_species'
-    base_directory = simulation_base_directory + 'sm_new/'
+                            neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                            config_path)
 
     # Create learning configuration.
+    sm_config_location = 'config-sm_state_species'
     local_dir = os.path.dirname(__file__)
-    config_path = os.path.join(local_dir, config_location)
+    config_path = os.path.join(local_dir, sm_config_location)
     config_sm_new = neat.Config(StateMachineFullGenome,
-                         ReproductionStateMachineOnly,
-                         StateSeparatedSpeciesSet,
-                         MarkAllStagnation,
-                         config_path)
+                                ReproductionStateMachineOnly,
+                                StateSeparatedSpeciesSet,
+                                MarkAllStagnation,
+                                config_path)
 
-    sm_based_experiment(launch_file, config_sm_new, base_directory, num_generations, num_runs,
-                        ExaggerateScenarioFourExperiment)
-
-    sleep(2)
     launch_file = 'sim_phototaxis_obst_new_fitness.launch'
 
+    # Redo of the super exaggerate problem.
     simulation_base_directory = expanduser("~") + '/Desktop/four_exaggerate_super/'
-    base_directory = simulation_base_directory + 'obstacle_light_one_layer/'
-    nn_based_experiment(launch_file, config_nn, base_directory, num_generations, num_runs,
-                        SuperExagerate)
-
-    sleep(2)
-
     base_directory = simulation_base_directory + 'sm_new/'
     sm_based_experiment(launch_file, config_sm_new, base_directory, num_generations, num_runs,
-                        ExaggerateScenarioFourExperiment)
+                        SuperExaggerate)
+
+    sleep(10)
+
+    # newly doing semi-exaggerate where scenario 4 is 6x as strong as the others.
+    simulation_base_directory = expanduser("~") + '/Desktop/four_exaggerate_6x/'
+    base_directory = simulation_base_directory + 'sm_new/'
+    sm_based_experiment(launch_file, config_sm_new, base_directory, num_generations, num_runs,
+                        SemiSuperExaggerate)
+
+    sleep(10)
+
+    base_directory = simulation_base_directory + 'nn/'
+    nn_based_experiment(launch_file, config_nn, base_directory, num_generations, num_runs,
+                        SemiSuperExaggerate)
