@@ -4,11 +4,14 @@ from os.path import expanduser
 from time import sleep
 
 import neat
+from neat.reproduction_mutation_only import ReproductionMutationOnly
 from neat.reproduction_state_machine import ReproductionStateMachineOnly, StateSeparatedSpeciesSet
 from neat.stagnation import MarkAllStagnation
 from neat.state_machine_full_genome import StateMachineFullGenome
+from neat.state_machine_genome import StateMachineGenome
+from neat.state_selector_genome import StateSelectorGenome
 
-from predefined_experiments import nn_based_experiment, sm_based_experiment
+from predefined_experiments import nn_based_experiment, sm_based_experiment, ss_based_experiment
 from ros_robot_experiment import ROSSimultaneRobotExperiment
 
 
@@ -74,33 +77,47 @@ if __name__ == '__main__':
                             config_path)
 
     # Create learning configuration.
-    sm_config_location = 'config-sm_state_species'
-    local_dir = os.path.dirname(__file__)
-    config_path = os.path.join(local_dir, sm_config_location)
-    config_sm_new = neat.Config(StateMachineFullGenome,
-                                ReproductionStateMachineOnly,
-                                StateSeparatedSpeciesSet,
-                                MarkAllStagnation,
-                                config_path)
+    # sm_config_location = 'config-sm_state_species'
+    # local_dir = os.path.dirname(__file__)
+    # config_path = os.path.join(local_dir, sm_config_location)
+    # config_sm_new = neat.Config(StateMachineFullGenome,
+    #                             ReproductionStateMachineOnly,
+    #                             StateSeparatedSpeciesSet,
+    #                             MarkAllStagnation,
+    #                             config_path)
+
+    # Create learning configuration.
+    sm_free_config_location = 'config-sm_free_states'
+    config_path = os.path.join(local_dir, sm_free_config_location)
+    config_sm = neat.Config(StateMachineGenome,
+                         ReproductionMutationOnly,
+                         neat.DefaultSpeciesSet,
+                         neat.DefaultStagnation,
+                         config_path)
 
     launch_file = 'sim_phototaxis_obst_new_fitness.launch'
 
     # Redo of the super exaggerate problem.
     simulation_base_directory = expanduser("~") + '/Desktop/four_exaggerate_super/'
-    base_directory = simulation_base_directory + 'sm_new/'
-    sm_based_experiment(launch_file, config_sm_new, base_directory, num_generations, num_runs,
+    base_directory = simulation_base_directory + 'sm/'
+    sm_based_experiment(launch_file, config_sm, base_directory, num_generations, num_runs,
                         SuperExaggerate)
 
     sleep(10)
 
-    # newly doing semi-exaggerate where scenario 4 is 6x as strong as the others.
-    simulation_base_directory = expanduser("~") + '/Desktop/four_exaggerate_6x/'
-    base_directory = simulation_base_directory + 'sm_new/'
-    sm_based_experiment(launch_file, config_sm_new, base_directory, num_generations, num_runs,
-                        SemiSuperExaggerate)
+    base_directory = simulation_base_directory + 'state_selector/'
 
-    sleep(10)
+    ss_config_location = 'config-sm_selector'
+    config_path = os.path.join(local_dir, ss_config_location)
+    config = neat.Config(StateSelectorGenome,
+                         ReproductionStateMachineOnly,
+                         StateSeparatedSpeciesSet,
+                         MarkAllStagnation,
+                         config_path)
 
-    base_directory = simulation_base_directory + 'nn/'
-    nn_based_experiment(launch_file, config_nn, base_directory, num_generations, num_runs,
-                        SemiSuperExaggerate)
+    ss_based_experiment(launch_file, config, base_directory, num_generations, num_runs,
+                        SuperExaggerate)
+
+    # base_directory = simulation_base_directory + 'nn/'
+    # nn_based_experiment(launch_file, config_nn, base_directory, num_generations, num_runs,
+    #                     SemiSuperExaggerate)

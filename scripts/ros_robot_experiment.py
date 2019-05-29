@@ -7,6 +7,7 @@ import rospy
 from examples.experiment_template import SingleExperiment
 
 from run_and_visualize import ScenarioVisualiser
+from run_and_store_states import StatesToCSV
 from simulation_control import SimulationCommunicator
 from tools.score_saver import ScoreSaver
 
@@ -139,6 +140,9 @@ class ROSRobotExperiment(SingleExperiment):
 
         sv = ScenarioVisualiser(self.controllers.sim_controllers, self.base_directory, self.genome_encoder)
         sv.visualize_winner_paths()
+
+        stc = StatesToCSV(self.controllers.sim_controllers, self.base_directory, self.genome_encoder)
+        stc.gather_states()
 
 
 class ROSSimultaneRobotExperiment(ROSRobotExperiment):
