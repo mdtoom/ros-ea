@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import csv
 import sys
 from multiprocessing import Condition
 from time import sleep
@@ -8,6 +7,7 @@ import matplotlib.pyplot as plt
 import rospy
 
 from message_parsing import NEATROSEncoder, SMROSEncoder
+from tools.scenario_visualizers import draw_scenario
 from simulation_control import SimulationCommunicator
 from tools.score_saver import ScoreSaver
 from tools.genome_analysis_tool import GenomeAnalysisTool
@@ -24,6 +24,7 @@ class ScenarioVisualiser(GenomeAnalysisTool):
 
         scores = []
         num = 0
+        draw_scenario(sc.namespace, plt.gca())
         for genome in self.genomes:
 
             encoded_genome = self.encoder.encode(genome, 0)
