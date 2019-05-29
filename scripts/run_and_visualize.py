@@ -2,12 +2,11 @@
 import sys
 from multiprocessing import Condition
 from time import sleep
-import matplotlib.pyplot as plt
 
 import rospy
 
 from message_parsing import NEATROSEncoder, SMROSEncoder
-from tools.scenario_visualizers import draw_scenario
+from tools.scenario_visualizers import draw_trajectory
 from simulation_control import SimulationCommunicator
 from tools.score_saver import ScoreSaver
 from tools.genome_analysis_tool import GenomeAnalysisTool
@@ -16,15 +15,10 @@ from tools.genome_analysis_tool import GenomeAnalysisTool
 class ScenarioVisualiser(GenomeAnalysisTool):
     """ This class creates visualizations of each winner genome in the given class."""
 
-    matplotlib_color_values = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
-
     def create_visualization(self, sc, visualize_loc='scenario.png'):
         """ This method creates a visualization and writes it back to the same folder."""
-        plt.clf()
-
         scores = []
-        num = 0
-        draw_scenario(sc.namespace, plt.gca())
+        loc_list = []
         for genome in self.genomes:
 
             encoded_genome = self.encoder.encode(genome, 0)
@@ -35,19 +29,11 @@ class ScenarioVisualiser(GenomeAnalysisTool):
             score = sc.get_score()
             scores.append(score.score)
             print('got a score of {0:.2f}'.format(score.score))
-
             x_locs = [loc.x for loc in trajectory.Locations]
             y_locs = [loc.y for loc in trajectory.Locations]
+            loc_list.append([x_locs, y_locs, 'gen score: {0:.2f}'.format(score.score)])
 
-            plt.plot(y_locs, x_locs, self.matplotlib_color_values[num % len(self.matplotlib_color_values)],
-                     label='gen score: {0:.2f}'.format(score.score))
-            num += 1
-
-        plt.axis('scaled')
-        plt.legend()
-        plt.xlim((0, 5))
-        plt.ylim((-1.5, 6.5))
-        plt.savefig(visualize_loc)
+        draw_trajectory(sc.namespace, loc_list, visualize_loc)
 
         avg_scenario_score = sum(scores) / len(scores)
         print("Average scenario score: {0}". format(avg_scenario_score))

@@ -3,8 +3,7 @@ from time import sleep
 import rospy
 import roslaunch
 from ma_evolution.msg import Score
-from ma_evolution.srv import SimScore
-from ma_evolution.srv import Trajectory
+from ma_evolution.srv import Trajectory, StateRequest, SimScore
 from std_srvs.srv import Empty
 
 from argos_experiment_runner import controller_selector
@@ -40,6 +39,11 @@ class SimulationCommunicator:
         rospy.wait_for_service(self.namespace + 'trajectory')
         trajectory_service = rospy.ServiceProxy(self.namespace + 'trajectory', Trajectory)
         return trajectory_service()
+
+    def get_states(self):
+        rospy.wait_for_service(self.namespace + 'states_request')
+        state_service = rospy.ServiceProxy(self.namespace + 'states_request', StateRequest)
+        return state_service()
 
     def callback(self, data):
         # Put the retrieved score in a list and notify (trough the condition) that a new score has arrived.

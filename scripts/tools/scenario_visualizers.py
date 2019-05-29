@@ -5,6 +5,30 @@ from matplotlib.patches import Rectangle
 import matplotlib.pyplot as plt
 
 
+def draw_trajectory(scenario_nm, loc_list, output_file):
+    """ This function draws the given trajectories in the correct simulation."""
+    plt.clf()
+    draw_scenario(scenario_nm, plt.gca())
+
+    num = 0
+    matplotlib_color_values = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
+
+    for locations in loc_list:
+
+        x_locs = locations[0]
+        y_locs = locations[1]
+
+        plt.plot(y_locs, x_locs, matplotlib_color_values[num % len(matplotlib_color_values)],
+                 label=locations[2])
+        num += 1
+
+    plt.axis('scaled')
+    plt.legend()
+    plt.xlim((0, 5))
+    plt.ylim((-1.5, 6.5))
+    plt.savefig(output_file)
+
+
 def draw_scenario(namespace, axis):
     """ This function draws a scenario given a namespace."""
 
