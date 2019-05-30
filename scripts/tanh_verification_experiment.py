@@ -19,22 +19,22 @@ if __name__ == '__main__':
 
     simulation_base_directory = expanduser("~") + '/Desktop/tanh_verification/'
 
-    config_location = 'config-feedforward-no-structural'
-    base_directory = simulation_base_directory + 'obstacle_light_one_layer/'
-
-    # Create learning configuration.
-    local_dir = os.path.dirname(__file__)
-    config_path = os.path.join(local_dir, config_location)
-    config_nn = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
-                            neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                            config_path)
-
-    nn_based_experiment(launch_file, config_nn, base_directory, num_generations, num_runs,
-                        ROSSimultaneRobotExperiment)
+    # config_location = 'config-feedforward-no-structural'
+    # base_directory = simulation_base_directory + 'obstacle_light_one_layer/'
+    #
+    # # Create learning configuration.
+    # local_dir = os.path.dirname(__file__)
+    # config_path = os.path.join(local_dir, config_location)
+    # config_nn = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
+    #                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
+    #                         config_path)
+    #
+    # nn_based_experiment(launch_file, config_nn, base_directory, num_generations, num_runs,
+    #                     ROSSimultaneRobotExperiment)
 
     sleep(2)
 
-    config_location = 'config-sm_state_species'
+    config_location = 'config-sm_one_state'
     base_directory = simulation_base_directory + 'sm_new/'
 
     # Create learning configuration.
