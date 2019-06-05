@@ -73,7 +73,6 @@ private:
 
   CCI_DifferentialSteeringActuator* m_pcWheels;
   CCI_FootBotProximitySensor* m_pcProximity;
-  CCI_ColoredBlobOmnidirectionalCameraSensor* m_pcOmniCam;
   CCI_FootBotLightSensor* m_pcLight;
 
   // The following constant values were copied from the argos source tree from
@@ -81,22 +80,12 @@ private:
   static constexpr Real HALF_BASELINE = 0.07f; // Half the distance between wheels
   static constexpr Real WHEEL_RADIUS = 0.029112741f;
 
-  /** The function that publishes the pucks to the reader. */
-  void PublishPucks();
-
   /** The function that publishes the proximity readings. */
   void PublishProximity();
 
   /** The function that publishes the light sensor readings. */
   void PublishLight();
 
-
-  /*
-   * The following variables are used as parameters for the
-   * algorithm. You can set their value in the <parameters> section
-   * of the XML configuration file, under the
-   * <controllers><argos_ros_bot_controller> section.
-   */
 
   // The number of time steps from the time step of the last callback
   // after which leftSpeed and rightSpeed will be set to zero.  Useful to
@@ -110,12 +99,6 @@ private:
   // message.
   Real leftSpeed, rightSpeed;
 
-  // The state of the gripper.
-//  bool gripping;
-
-  // Puck list publisher
-  ros::Publisher puckListPub;
-
   // Proximity sensor publisher
   ros::Publisher proximityPub;
 
@@ -124,9 +107,6 @@ private:
 
   // Subscriber for cmd_vel (Twist message) topic.
   ros::Subscriber cmdVelSub;
-
-  // Subscriber for gripper (Bool message) topic.
-//  ros::Subscriber gripperSub;
 
 public:
   // We need only a single ROS node, although there are individual publishers

@@ -59,8 +59,6 @@ add_message_files(
         Score.msg
         Proximity.msg
         ProximityList.msg
-        Puck.msg
-        PuckList.msg
         Light.msg
         LightList.msg
         SMGenome.msg

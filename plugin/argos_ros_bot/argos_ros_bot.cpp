@@ -39,7 +39,6 @@ ros::NodeHandle* CArgosRosBot::nodeHandle = initROS();
 CArgosRosBot::CArgosRosBot() :
   m_pcWheels(NULL),
   m_pcProximity(NULL),
-  m_pcOmniCam(NULL),
   stopWithoutSubscriberCount(10),
   stepsSinceCallback(0),
   leftSpeed(0),
@@ -49,11 +48,10 @@ CArgosRosBot::CArgosRosBot() :
 void CArgosRosBot::Init(TConfigurationNode& t_node)
 {
     // Create the topics to publish
-    stringstream puckListTopic, proximityTopic, lightTopic;
+    stringstream proximityTopic, lightTopic;
     proximityTopic << nodeHandle->getNamespace() << "/proximity";
     lightTopic << nodeHandle->getNamespace() << "/light";
 
-    puckListPub = nodeHandle->advertise<PuckList>(puckListTopic.str(), 1);
     proximityPub = nodeHandle->advertise<ProximityList>(proximityTopic.str(), 1);
     lightPub = nodeHandle->advertise<LightList>(lightTopic.str(), 1);
 
@@ -65,7 +63,6 @@ void CArgosRosBot::Init(TConfigurationNode& t_node)
     // Get sensor/actuator handles
     m_pcWheels = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
     m_pcProximity = GetSensor<CCI_FootBotProximitySensor>("footbot_proximity");
-    m_pcOmniCam = GetSensor<CCI_ColoredBlobOmnidirectionalCameraSensor>("colored_blob_omnidirectional_camera");
     m_pcLight = GetSensor<CCI_FootBotLightSensor>("footbot_light");
 
     /*
@@ -82,30 +79,6 @@ void CArgosRosBot::Init(TConfigurationNode& t_node)
 bool puckComparator(Puck a, Puck b) {
 
     return a.angle < b.angle;
-}
-
-
-void CArgosRosBot::PublishPucks() {
-
-    const CCI_ColoredBlobOmnidirectionalCameraSensor::SReadings& camReads = m_pcOmniCam->GetReadings();
-    PuckList puckList;
-    puckList.n = camReads.BlobList.size();
-    for (size_t i = 0; i < puckList.n; ++i) {
-        Puck puck;
-        puck.type = (camReads.BlobList[i]->Color == CColor::RED);
-        puck.range = camReads.BlobList[i]->Distance;
-        // Make the angle of the puck in the range [-PI, PI].  This is useful for
-        // tasks such as homing in on a puck using a simple controller based on
-        // the sign of this angle.
-        puck.angle = camReads.BlobList[i]->Angle.SignedNormalize().GetValue();
-        puckList.pucks.push_back(puck);
-    }
-
-    // Sort the puck list by angle.  This is useful for the purposes of extracting meaning from
-    // the local puck configuration (e.g. fitting a lines to the detected pucks).
-    sort(puckList.pucks.begin(), puckList.pucks.end(), puckComparator);
-
-    puckListPub.publish(puckList);
 }
 
 
