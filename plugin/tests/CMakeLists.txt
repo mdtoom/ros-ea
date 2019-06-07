@@ -1,0 +1,2 @@
+add_executable(controller_tests controller_tests.cpp)
+target_link_libraries(controller_tests robot_controllers)
