@@ -67,6 +67,7 @@ add_message_files(
         SMTransition.msg
         SMCondition.msg
         WeightVector.msg
+        RobotControl.msg
 )
 
 # Generate services in the 'srv' folder
@@ -76,6 +77,7 @@ add_service_files(
         Trajectory.srv
         Done.srv
         StateRequest.srv
+        SensorDataRequest.srv
 )
 
 ## Generate actions in the 'action' folder
