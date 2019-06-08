@@ -1,5 +1,0 @@
----
-int32 ln
-Light[] lights
-int32 pn
-Proximity[] proximities

@@ -57,17 +57,12 @@ add_message_files(
         NNode.msg
         NEATGenome.msg
         Score.msg
-        Proximity.msg
-        ProximityList.msg
-        Light.msg
-        LightList.msg
         SMGenome.msg
         SMSGenome.msg
         SMState.msg
         SMTransition.msg
         SMCondition.msg
         WeightVector.msg
-        RobotControl.msg
 )
 
 # Generate services in the 'srv' folder
@@ -75,9 +70,7 @@ add_service_files(
         FILES
         SimScore.srv
         Trajectory.srv
-        Done.srv
         StateRequest.srv
-        SensorDataRequest.srv
 )
 
 ## Generate actions in the 'action' folder
