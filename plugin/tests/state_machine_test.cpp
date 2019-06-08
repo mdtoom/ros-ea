@@ -28,7 +28,7 @@ void state_machine_test_1_state()
     assert(results[1] > 0.76 && results[1] < 0.77);
 
     std::vector<CControllerState*> states{tsp};
-    CStateMachineController smc(states);
+    CStateMachineController smc(1, 1, states);
     results = smc.activate(inputs);
 
     assert(results.size() == 2);

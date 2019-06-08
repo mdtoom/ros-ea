@@ -8,13 +8,14 @@
 #include <argos3/core/simulator/entity/embodied_entity.h>
 
 #include <queue>
-#include "ros/ros.h"
+#include <ros/ros.h>
 #include "std_srvs/Empty.h"
 #include "ma_evolution/SimScore.h"
 #include "geometry_msgs/Point.h"
 #include "ma_evolution/Trajectory.h"
 #include "ma_evolution/StateRequest.h"
 #include "ma_evolution/SMGenome.h"
+#include "genome_receiver.h"
 
 /****************************************/
 /****************************************/
@@ -74,8 +75,8 @@ protected:
     ros::ServiceServer m_pcTrajectoryService;
     /** This service returns the state history of the current controller. */
     ros::ServiceServer m_pcStateHistoryService;
-    /** This subscribes ensures receiving the genomes. */
-    ros::Subscriber m_pcGenomeSub;
+    /** This publisher publishes the score messages of the robots that have been evaluated. */
+    ros::Publisher m_pcScorePublisher;
 
     /**
      * Calculate the fitness based on a distance to the object.
@@ -97,13 +98,16 @@ protected:
     CRandom::CRNG* m_pcRNG;
 
 private:
+    /** This variable stores the genomes that need to be evaluated on this controller. */
+    CGenomeReceiver<ma_evolution::SMGenome> m_cGenomeReceiver;
 
     Real m_fFitnessPower;
-    std::Queue<CRobotController*> m_qControllerQueue;
+
     std::vector<geometry_msgs::Point> m_vLocations;
     std::vector<int> m_vControllerStates;
 
-    int m_executedSteps;
+    int m_iExecutedSteps;
+    int m_iTargetExecutedSteps;
 
 };
 

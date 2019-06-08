@@ -1,5 +1,8 @@
 add_library(mpga_phototaxis_obstacle_loop_functions SHARED
-        mpga_phototaxis_obstacle_loop_functions.h mpga_phototaxis_obstacle_loop_functions.cpp)
+        mpga_phototaxis_obstacle_loop_functions.h mpga_phototaxis_obstacle_loop_functions.cpp
+        genome_receiver.h
+        message_decoder.h message_decoder.cpp
+        )
 
 target_link_libraries(mpga_phototaxis_obstacle_loop_functions
     argos3core_simulator

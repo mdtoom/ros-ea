@@ -43,7 +43,7 @@ class CStateMachineController : public CRobotController {
 
 public:
 
-    CStateMachineController(std::vector<CControllerState*> states);
+    CStateMachineController(int controller_id, int gen_id, std::vector<CControllerState*> states);
     ~CStateMachineController();
 
     /**

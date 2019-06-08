@@ -23,8 +23,8 @@ public:
     /** This vector can be used to store the states of the robot. */
     std::vector<int> m_vStateHistory;
 
-    m_iID;
-    m_iGenerationID;
+    int m_iID;
+    int m_iGenerationID;
 
 };
 
