@@ -41,10 +41,9 @@ aggregation_map CPerceptronNetwork::s_mAggregationMapping = create_aggregation_m
 
 CPerceptronNetwork::CPerceptronNetwork(std::vector<std::vector<Real>> weights, std::vector<Real> biases,
                                        const std::string activation_function, const std::string aggregation_function)
+                                       : m_vWeights(weights), m_vBiases(biases)
 {
     assert(m_vWeights.size() == m_vBiases.size());
-    m_vWeights = weights;
-    m_vBiases = biases;
     m_fActivationFunc = CPerceptronNetwork::s_mActivationMapping[activation_function];
     m_fAggregationFunc = CPerceptronNetwork::s_mAggregationMapping[aggregation_function];
 }

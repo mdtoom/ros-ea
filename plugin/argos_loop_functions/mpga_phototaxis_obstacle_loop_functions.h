@@ -60,9 +60,6 @@ public:
     /** This function returns the state history of the robot until reset. */
     virtual bool GetStateHistory(ma_evolution::StateRequest::Request& request, ma_evolution::StateRequest::Response& response);
 
-    /** This function receives a state machine genome. */
-    virtual void receive_genome(const ma_evolution::SMGenome& msg);
-
     // We need only a single ROS node, although there are individual publishers
     // and subscribers for each instance of the class.
     static ros::NodeHandle* nodeHandle;

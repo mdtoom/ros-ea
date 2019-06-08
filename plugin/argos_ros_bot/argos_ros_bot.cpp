@@ -56,11 +56,11 @@ void CArgosRosBot::ControlStep() {
 
         for (size_t i = 0; i < tProxReads.size(); ++i)
         {
-            sensor_readings.emplace_back(tProxReads[i].Value);
+            sensor_readings[i] = tProxReads[i].Value;
         }
 
         for (size_t i = 0; i < tLightReads.size(); ++i) {
-            sensor_readings.emplace_back(tLightReads[i].Value);
+            sensor_readings[i + tProxReads.size()] = tLightReads[i].Value;
         }
 
         // Activate the controller.
@@ -75,8 +75,13 @@ void CArgosRosBot::ControlStep() {
     }
 }
 
-void ::CArgosRosBot::set_controller(CRobotController *controller) {
+void CArgosRosBot::set_controller(CRobotController *controller) {
     m_cController = controller;
 }
+
+CRobotController *CArgosRosBot::get_controller() {
+    return m_cController;
+}
+
 
 REGISTER_CONTROLLER(CArgosRosBot, "argos_ros_bot_controller")

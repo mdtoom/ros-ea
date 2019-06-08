@@ -38,6 +38,8 @@ CMPGAPhototaxisObstacleLoopFunctions::CMPGAPhototaxisObstacleLoopFunctions() :
     m_cGenomeReceiver(nodeHandle), m_iExecutedSteps(0), m_iTargetExecutedSteps(600)
 { }
 
+//TODO: make time steps changeable
+
 /****************************************/
 /****************************************/
 
@@ -71,7 +73,7 @@ void CMPGAPhototaxisObstacleLoopFunctions::Init(TConfigurationNode& t_node)
     m_pcStateHistoryService = nodeHandle->
             advertiseService("states_request", &CMPGAPhototaxisObstacleLoopFunctions::GetStateHistory, this);
 
-    ros::Publisher pub = nodeHandle->advertise<ma_evolution::Score>("score_topic", 100);
+    m_pcScorePublisher = nodeHandle->advertise<ma_evolution::Score>("score_topic", 100);
 
     // Create the foot-bot and get a reference to its controller
     m_pcFootBot = new CFootBotEntity("fb", "argos_ros_bot");
@@ -79,8 +81,8 @@ void CMPGAPhototaxisObstacleLoopFunctions::Init(TConfigurationNode& t_node)
     Reset();
 }
 
-
-
+/****************************************/
+/****************************************/
 
 void CMPGAPhototaxisObstacleLoopFunctions::SetStartLocation() {
 
@@ -165,29 +167,36 @@ bool CMPGAPhototaxisObstacleLoopFunctions::GetStateHistory(ma_evolution::StateRe
 void CMPGAPhototaxisObstacleLoopFunctions::PreStep()
 {
     CArgosRosBot &controller = (CArgosRosBot&) m_pcFootBot->GetControllableEntity().GetController();
-
-    ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(0.1));
+    ros::getGlobalCallbackQueue()->callAvailable();
 
     if (controller.get_controller() == nullptr)
     {   // If no controller is currently evaluated.
+
         while(!m_cGenomeReceiver.has_next() && ros::ok())
         {   // Wait until a new genome arrives
-            ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(1.0));
+            ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(0.1));
             LOG << "No genome available, waiting." << std::endl;
+            LOG.Flush();
         }
 
         Reset();
         CRobotController *new_controller = m_cGenomeReceiver.next();
         controller.set_controller(new_controller);
     }
-    LOG << "Executed pre step" << std::endl;
-    LOG.Flush();
+
+    if (!ros::ok())
+    {
+        LOG << "ROS stopped working" << std::endl;
+        LOG.Flush();
+        exit(0);
+    }
 }
 
 /****************************************/
 /****************************************/
 
-void CMPGAPhototaxisObstacleLoopFunctions::PostStep() {
+void CMPGAPhototaxisObstacleLoopFunctions::PostStep()
+{
 
     // Add the current robot location to the list of visited locations.
     CVector3 robotPosition = m_pcFootBot->GetEmbodiedEntity().GetOriginAnchor().Position;
@@ -209,7 +218,7 @@ void CMPGAPhototaxisObstacleLoopFunctions::PostStep() {
         // Copy the states the controller has been in.
         m_vControllerStates.clear();
         for (std::vector<int>::iterator it = current_controller->m_vStateHistory.begin();
-                it == current_controller->m_vStateHistory.end(); ++it)
+                it != current_controller->m_vStateHistory.end(); ++it)
         {
             m_vControllerStates.push_back(*it);
         }
@@ -233,6 +242,9 @@ Real CMPGAPhototaxisObstacleLoopFunctions::Score() {
 
     return m_fScore;
 }
+
+/****************************************/
+/****************************************/
 
 Real CMPGAPhototaxisObstacleLoopFunctions::CalculateStepScore()
 {
