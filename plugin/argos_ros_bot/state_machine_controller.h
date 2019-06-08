@@ -5,6 +5,7 @@
 #ifndef MA_EVOLUTION_STATE_MACHINE_CONTROLLER_H
 #define MA_EVOLUTION_STATE_MACHINE_CONTROLLER_H
 
+#include "robot_controller.h"
 #include "perceptron_network.h"
 
 /** This class gives a template for a state in a state machine controller. Switching states should be implemented by
@@ -38,7 +39,7 @@ private:
 };
 
 
-class CStateMachineController {
+class CStateMachineController : public CRobotController {
 
 public:
 
@@ -49,7 +50,7 @@ public:
      * This function activates the state machine controller with the given inputs.
      * @return      - vector containing the outputs of the calculation.
      */
-    std::vector<Real> activate(const std::vector<Real> inputs);
+    std::vector<Real> activate(const std::vector<Real> inputs) override;
 
     CControllerState *current_state();
 

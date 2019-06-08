@@ -14,24 +14,9 @@
 /* 2D vector definition */
 #include <argos3/core/utility/math/vector2.h>
 
-#include <iostream>
-#include <sstream>
-
-#include <ros/callback_queue.h>
-
 using namespace std;
 using namespace ma_evolution;
 
-// Initialize ROS node.  There will be only one ROS node no matter how many robots are created in
-// ARGoS.  However, we will have one instance of the CArgosRosBot class for each ARGoS robot.
-ros::NodeHandle* initROS() {
-  int argc = 0;
-  char *argv = (char *) "";
-  ros::init(argc, &argv, "argos_bridge");
-  return new ros::NodeHandle();
-}
-
-ros::NodeHandle* CArgosRosBot::nodeHandle = initROS();
 
 /****************************************/
 /****************************************/
@@ -39,126 +24,59 @@ ros::NodeHandle* CArgosRosBot::nodeHandle = initROS();
 CArgosRosBot::CArgosRosBot() :
   m_pcWheels(NULL),
   m_pcProximity(NULL),
-  stopWithoutSubscriberCount(10),
-  stepsSinceCallback(0),
+  m_cController(NULL),
   leftSpeed(0),
   rightSpeed(0)//,
 { }
 
 void CArgosRosBot::Init(TConfigurationNode& t_node)
 {
-    // Create the topics to publish
-    stringstream proximityTopic, lightTopic;
-    proximityTopic << nodeHandle->getNamespace() << "/proximity";
-    lightTopic << nodeHandle->getNamespace() << "/light";
-
-    proximityPub = nodeHandle->advertise<ProximityList>(proximityTopic.str(), 1);
-    lightPub = nodeHandle->advertise<LightList>(lightTopic.str(), 1);
-
-    // Create the subscribers
-    stringstream cmdVelTopic;
-    cmdVelTopic << nodeHandle->getNamespace() << "/cmd_vel";
-    cmdVelSub = nodeHandle->subscribe(cmdVelTopic.str(), 1, &CArgosRosBot::cmdVelCallback, this);
-
     // Get sensor/actuator handles
     m_pcWheels = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
     m_pcProximity = GetSensor<CCI_FootBotProximitySensor>("footbot_proximity");
     m_pcLight = GetSensor<CCI_FootBotLightSensor>("footbot_light");
-
-    /*
-    * Parse the configuration file
-    *
-    * The user defines this part. Here, the algorithm accepts three
-    * parameters and it's nice to put them in the config file so we don't
-    * have to recompile if we want to try other settings.
-    */
-    GetNodeAttributeOrDefault(t_node, "stopWithoutSubscriberCount", stopWithoutSubscriberCount, stopWithoutSubscriberCount);
-}
-
-// Compares pucks for sorting purposes.  We sort by angle.
-bool puckComparator(Puck a, Puck b) {
-
-    return a.angle < b.angle;
-}
-
-
-void CArgosRosBot::PublishProximity() {
-    /* Get readings from proximity sensor */
-    const CCI_FootBotProximitySensor::TReadings& tProxReads = m_pcProximity->GetReadings();
-    ProximityList proxList;
-    proxList.n = tProxReads.size();
-    for (size_t i = 0; i < proxList.n; ++i) {
-        Proximity prox;
-        prox.value = tProxReads[i].Value;
-        prox.angle = tProxReads[i].Angle.GetValue();
-        proxList.proximities.push_back(prox);
-
-        //cout << GetId() << ": value: " << prox.value << ": angle: " << prox.angle << endl;
-    }
-
-    proximityPub.publish(proxList);
-}
-
-
-void CArgosRosBot::PublishLight() {
-    /* Get readings from light sensor */
-    const CCI_FootBotLightSensor::TReadings& tLightReads = m_pcLight->GetReadings();
-
-    LightList lightList;
-    lightList.n = tLightReads.size();
-    for (size_t i = 0; i < lightList.n; ++i) {
-        Light light;
-        light.value = tLightReads[i].Value;
-        light.angle = tLightReads[i].Angle.GetValue();
-        lightList.lights.push_back(light);
-
-        //cout << GetId() << ": value: " << prox.value << ": angle: " << prox.angle << endl;
-    }
-
-    lightPub.publish(lightList);
 }
 
 
 void CArgosRosBot::ControlStep() {
 
 
-
-    if (!ros::ok())
+    if (m_cController == nullptr)
     {
-        LOG << "ROS stopped working" << std::endl;
-        LOG.Flush();
-        exit(0);
-    }
-
-    //  PublishPucks();
-    PublishProximity();
-    PublishLight();
-
-    // Wait for any callbacks to be called.
-    ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(0.1));
-
-    // If we haven't heard from the subscriber in a while, set the speed to zero.
-    if (stepsSinceCallback > stopWithoutSubscriberCount) {
-        leftSpeed = 0;
-        rightSpeed = 0;
+        LOGERR << "Executing step without controller" << std::endl;
+        LOGERR.Flush();
     } else {
-        stepsSinceCallback++;
-    }
 
-    m_pcWheels->SetLinearVelocity(leftSpeed, rightSpeed);
+        // Read the sensors.
+        const CCI_FootBotProximitySensor::TReadings& tProxReads = m_pcProximity->GetReadings();
+        const CCI_FootBotLightSensor::TReadings& tLightReads = m_pcLight->GetReadings();
+
+        // Create a vector for the sensor readings.
+        std::vector<Real> sensor_readings(tProxReads.size() + tLightReads.size());
+
+        for (size_t i = 0; i < tProxReads.size(); ++i)
+        {
+            sensor_readings.emplace_back(tProxReads[i].Value);
+        }
+
+        for (size_t i = 0; i < tLightReads.size(); ++i) {
+            sensor_readings.emplace_back(tLightReads[i].Value);
+        }
+
+        // Activate the controller.
+        std::vector<Real> outputs = m_cController->activate(sensor_readings);
+        Real v = outputs[0];
+        Real w = outputs[1];
+
+        // Use the kinematics of a differential-drive robot to derive the left and right wheel speeds.
+        leftSpeed = (v - HALF_BASELINE * w) / WHEEL_RADIUS;
+        rightSpeed = (v + HALF_BASELINE * w) / WHEEL_RADIUS;
+        m_pcWheels->SetLinearVelocity(leftSpeed, rightSpeed);
+    }
 }
 
-void CArgosRosBot::cmdVelCallback(const geometry_msgs::Twist& twist) {
-
-  Real v = twist.linear.x;  // Forward speed
-  Real w = twist.angular.z; // Rotational speed
-
-  // Use the kinematics of a differential-drive robot to derive the left
-  // and right wheel speeds.
-  leftSpeed = (v - HALF_BASELINE * w) / WHEEL_RADIUS;
-  rightSpeed = (v + HALF_BASELINE * w) / WHEEL_RADIUS;
-
-  stepsSinceCallback = 0;
+void ::CArgosRosBot::set_controller(CRobotController *controller) {
+    m_cController = controller;
 }
 
 REGISTER_CONTROLLER(CArgosRosBot, "argos_ros_bot_controller")

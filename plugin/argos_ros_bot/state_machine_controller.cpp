@@ -31,6 +31,7 @@ CStateMachineController::~CStateMachineController()
 std::vector<Real> CStateMachineController::activate(const std::vector <Real> inputs)
 {
     m_iCurrentState = current_state()->next_state(inputs);
+    m_vStateHistory.emplace_back(m_iCurrentState);
     return current_state()->activate(inputs);
 }
 

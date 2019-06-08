@@ -4,6 +4,8 @@
 #include <argos3/core/simulator/entity/positional_entity.h>
 #include <argos3/core/utility/math/vector3.h>
 #include <cmath>
+#include <iostream>
+#include <sstream>
 
 /****************************************/
 /****************************************/
@@ -14,9 +16,20 @@ using namespace argos;
 
 const Real maxDistance = 11.0;      // Constant used to indicate the max distance from the robot to the light.
 
+
+// Initialize ROS node.  There will be only one ROS node no matter how many robots are created in
+// ARGoS.  However, we will have one instance of the CArgosRosBot class for each ARGoS robot.
+ros::NodeHandle* initROS() {
+    int argc = 0;
+    char *argv = (char *) "";
+    ros::init(argc, &argv, "argos_bridge");
+    return new ros::NodeHandle();
+}
+
+ros::NodeHandle* CMPGAPhototaxisObstacleLoopFunctions::nodeHandle = initROS();
+
 CMPGAPhototaxisObstacleLoopFunctions::CMPGAPhototaxisObstacleLoopFunctions() :
-    m_fScore(0), m_fMaxDistance(maxDistance), m_pcFootBot(NULL), m_pcRNG(NULL),
-    m_bDone(false), m_fFitnessPower(FITNESS_POWER_DEFAULT)
+    m_fScore(0), m_fMaxDistance(maxDistance), m_pcFootBot(NULL), m_pcRNG(NULL), m_fFitnessPower(FITNESS_POWER_DEFAULT)
 { }
 
 /****************************************/
@@ -41,24 +54,42 @@ void CMPGAPhototaxisObstacleLoopFunctions::Init(TConfigurationNode& t_node)
 
     SetStartLocation();
 
-    // Register a reset service at the node of the simulation.
-    m_pcResetService = CArgosRosBot::nodeHandle->
-            advertiseService("reset", &CMPGAPhototaxisObstacleLoopFunctions::ResetRobot, this);
 
     // Register the get score service of the node of the simulation.
-    m_pcScoreService = CArgosRosBot::nodeHandle->
+    m_pcScoreService = nodeHandle->
             advertiseService("score", &CMPGAPhototaxisObstacleLoopFunctions::GetScore, this);
 
-    m_pcTrajectoryService = CArgosRosBot::nodeHandle->
+    m_pcTrajectoryService = nodeHandle->
             advertiseService("trajectory", &CMPGAPhototaxisObstacleLoopFunctions::GetTrajectory, this);
 
-    m_pcDoneService = CArgosRosBot::nodeHandle->advertiseService("done",
-            &CMPGAPhototaxisObstacleLoopFunctions::IsDone, this);
+    m_pcStateHistoryService = nodeHandle->
+            advertiseService("states_request", &CMPGAPhototaxisObstacleLoopFunctions::GetStateHistory, this);
+
+
+    // Create the subscribers
+    std::stringstream genome_topic_str;
+    genome_topic_str << nodeHandle->getNamespace() << "/genome_topic";
+    m_pcGenomeSub = nodeHandle->subscribe(genome_topic_str.str(), 1000,
+            &CMPGAPhototaxisObstacleLoopFunctions::receive_genome, this);
 
     // Create the foot-bot and get a reference to its controller
     m_pcFootBot = new CFootBotEntity("fb", "argos_ros_bot");
     AddEntity(*m_pcFootBot);
     Reset();
+}
+
+CRobotController *decodeROSMsg(msg)
+{
+    // TODO:: implement.
+    return nullptr
+}
+
+void CMPGAPhototaxisObstacleLoopFunctions::receive_genome(const ma_evolution::SMGenome& msg) {
+    CRobotController *controller = decodeROSMsg(msg);
+    m_qControllerQueue.put(controller);
+
+    LOG << "Received genome" << std::endl;
+    LOG.Flush();
 }
 
 void CMPGAPhototaxisObstacleLoopFunctions::SetStartLocation() {
@@ -94,15 +125,8 @@ void CMPGAPhototaxisObstacleLoopFunctions::Reset() {
     }
 
     m_vLocations.clear();
-    m_bDone = false;
+    m_vControllerStates.clear();
     m_fScore = 0;
-}
-
-bool CMPGAPhototaxisObstacleLoopFunctions::ResetRobot(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response) {
-
-    Reset();
-    return true;
-
 }
 
 /****************************************/
@@ -119,13 +143,6 @@ bool CMPGAPhototaxisObstacleLoopFunctions::GetScore(ma_evolution::SimScore::Requ
 /****************************************/
 /****************************************/
 
-bool CMPGAPhototaxisObstacleLoopFunctions::IsDone(ma_evolution::Done::Request& request, ma_evolution::Done::Response& response)
-{
-    response.done = m_bDone;
-    return true;
-}
-
-
 bool CMPGAPhototaxisObstacleLoopFunctions::GetTrajectory(ma_evolution::Trajectory::Request& request,
                                                  ma_evolution::Trajectory::Response& response)
 {
@@ -135,6 +152,41 @@ bool CMPGAPhototaxisObstacleLoopFunctions::GetTrajectory(ma_evolution::Trajector
     }
 
     return true;
+}
+
+/****************************************/
+/****************************************/
+
+bool CMPGAPhototaxisObstacleLoopFunctions::GetStateHistory(ma_evolution::StateRequest::Request &request,
+                                                           ma_evolution::StateRequest::Response &response) {
+
+    for(std::vector<int>::iterator it = m_vControllerStates.begin(); it != m_vControllerStates.end(); ++it)
+    {
+        response.StateSequence.emplace_back(*it);
+    }
+
+    return true;
+}
+
+/****************************************/
+/****************************************/
+
+void CMPGAPhototaxisObstacleLoopFunctions::PreStep()
+{
+    CArgosRosBot &controller = (CArgosRosBot&) m_pcFootBot->GetControllableEntity().GetController();
+
+    ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(0.1));
+
+    // Wait until a genome is send.
+    while(m_qGenomeQueue.empty() && c)
+    {
+        ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(0.1));
+        LOG << "No genome available, waiting." << std::endl;
+    }
+
+
+    LOG << "Executed pre step" << std::endl;
+    LOG.Flush();
 }
 
 /****************************************/
@@ -150,14 +202,11 @@ void CMPGAPhototaxisObstacleLoopFunctions::PostStep() {
     point.z = robotPosition.GetZ();
     m_vLocations.emplace_back(point);
 
-    if (!m_bDone)
+    m_fScore += CalculateStepScore();
+
+    if (m_pcFootBot->GetEmbodiedEntity().IsCollidingWithSomething())
     {
-        // After a collision do not update the score anymore.
-        if (m_pcFootBot->GetEmbodiedEntity().IsCollidingWithSomething())
-        {
-            m_bDone = true;
-        }
-        m_fScore += CalculateStepScore();
+        //TODO: remove controller and set variables.
     }
 }
 

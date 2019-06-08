@@ -1,3 +1,3 @@
 uint8 inputSensor
-uint8 operator
+uint8 comp_operator
 float64 comparator_value

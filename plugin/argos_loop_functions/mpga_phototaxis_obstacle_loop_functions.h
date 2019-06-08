@@ -7,12 +7,14 @@
 #include <argos3/core/simulator/loop_functions.h>
 #include <argos3/core/simulator/entity/embodied_entity.h>
 
+#include <queue>
 #include "ros/ros.h"
 #include "std_srvs/Empty.h"
 #include "ma_evolution/SimScore.h"
 #include "geometry_msgs/Point.h"
 #include "ma_evolution/Trajectory.h"
-#include "ma_evolution/Done.h"
+#include "ma_evolution/StateRequest.h"
+#include "ma_evolution/SMGenome.h"
 
 /****************************************/
 /****************************************/
@@ -41,35 +43,39 @@ public:
 
     virtual void SetStartLocation();
 
+    virtual void PreStep();
+
     virtual void PostStep();
 
     /* Calculates the performance of the robot in a trial */
     virtual Real Score();
 
-
-    /** This function resets the robot to its original position. */
-    virtual bool ResetRobot(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response);
-
     /** This function gets the score of the robot. */
     virtual bool GetScore(ma_evolution::SimScore::Request& request, ma_evolution::SimScore::Response& response);
-
-    /** Returns true if the robot is done. */
-    virtual bool IsDone(ma_evolution::Done::Request& request, ma_evolution::Done::Response& response);
 
     /** This function returns the latest trajectory of the robot until reset. */
     virtual bool GetTrajectory(ma_evolution::Trajectory::Request& request, ma_evolution::Trajectory::Response& response);
 
+    /** This function returns the state history of the robot until reset. */
+    virtual bool GetStateHistory(ma_evolution::StateRequest::Request& request, ma_evolution::StateRequest::Response& response);
+
+    /** This function receives a state machine genome. */
+    virtual void receive_genome(const ma_evolution::SMGenome& msg);
+
+    // We need only a single ROS node, although there are individual publishers
+    // and subscribers for each instance of the class.
+    static ros::NodeHandle* nodeHandle;
 
 protected:
 
-    /** This server keeps the messages for the reset service coming. */
-    ros::ServiceServer m_pcResetService;
     /** This server returns the current score of the simulation. */
     ros::ServiceServer m_pcScoreService;
     /** This returns the list of locations of the robot from the latest reset. */
     ros::ServiceServer m_pcTrajectoryService;
-    /** This returns the list of locations of the robot from the latest reset. */
-    ros::ServiceServer m_pcDoneService;
+    /** This service returns the state history of the current controller. */
+    ros::ServiceServer m_pcStateHistoryService;
+    /** This subscribes ensures receiving the genomes. */
+    ros::Subscriber m_pcGenomeSub;
 
     /**
      * Calculate the fitness based on a distance to the object.
@@ -90,13 +96,15 @@ protected:
 
     CRandom::CRNG* m_pcRNG;
 
-    bool m_bDone;
-
 private:
 
     Real m_fFitnessPower;
-
+    std::Queue<CRobotController*> m_qControllerQueue;
     std::vector<geometry_msgs::Point> m_vLocations;
+    std::vector<int> m_vControllerStates;
+
+    int m_executedSteps;
+
 };
 
 #endif

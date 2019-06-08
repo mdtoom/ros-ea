@@ -15,9 +15,7 @@
 #include <argos3/plugins/robots/foot-bot/control_interface/ci_footbot_light_sensor.h>
 #include <argos3/plugins/robots/generic/control_interface/ci_colored_blob_omnidirectional_camera_sensor.h>
 #include <ros/ros.h>
-#include <string>
-#include "geometry_msgs/Twist.h"
-#include "std_msgs/Bool.h"
+#include "robot_controller.h"
 
 using namespace argos;
 
@@ -59,15 +57,12 @@ public:
    */
   virtual void Destroy() {}
 
-  /*
-   * The callback method for getting new commanded speed on the cmd_vel topic.
+  /**
+   * This function sets the controller of the robot to the given controller.
+   * @param controller      - Controller of the robot.
    */
-  void cmdVelCallback(const geometry_msgs::Twist& twist);
-
-  /*
-   * The callback method for getting the desired state of the gripper.
-   */
-//  void gripperCallback(const std_msgs::Bool& value);
+  void set_controller(CRobotController *controller);
+  CRobotController * get_controller();
 
 private:
 
@@ -80,38 +75,12 @@ private:
   static constexpr Real HALF_BASELINE = 0.07f; // Half the distance between wheels
   static constexpr Real WHEEL_RADIUS = 0.029112741f;
 
-  /** The function that publishes the proximity readings. */
-  void PublishProximity();
 
-  /** The function that publishes the light sensor readings. */
-  void PublishLight();
-
-
-  // The number of time steps from the time step of the last callback
-  // after which leftSpeed and rightSpeed will be set to zero.  Useful to
-  // shutdown the robot after the controlling code on the ROS side has quit.
-  int stopWithoutSubscriberCount;
-
-  // The number of time steps since the last callback.
-  int stepsSinceCallback;
-
-  // Most recent left and right wheel speeds, converted from the ROS twist
-  // message.
+  // Most recent left and right wheel speeds.
   Real leftSpeed, rightSpeed;
 
-  // Proximity sensor publisher
-  ros::Publisher proximityPub;
+  CRobotController *m_cController;
 
-  // Light sensor publisher;
-  ros::Publisher lightPub;
-
-  // Subscriber for cmd_vel (Twist message) topic.
-  ros::Subscriber cmdVelSub;
-
-public:
-  // We need only a single ROS node, although there are individual publishers
-  // and subscribers for each instance of the class.
-  static ros::NodeHandle* nodeHandle;
 };
 
 #endif
