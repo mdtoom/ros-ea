@@ -15,7 +15,7 @@ std::vector<Real> CControllerState::activate(const std::vector<Real> inputs)
 }
 
 CStateMachineController::CStateMachineController(int controller_id, int gen_id, std::vector<CControllerState*> states) :
-    CRobotController(controller_id, gen_id), m_iCurrentState(0), m_vStates(states)
+    CRobotController(controller_id, gen_id), m_iCurrentState(states[0]->m_iStateId), m_vStates(states)
 { }
 
 CStateMachineController::~CStateMachineController()
@@ -37,5 +37,20 @@ std::vector<Real> CStateMachineController::activate(const std::vector <Real> inp
 
 CControllerState *CStateMachineController::current_state()
 {
-    return m_vStates[m_iCurrentState];
+    return get_state(m_iCurrentState);
+}
+
+CControllerState *CStateMachineController::get_state(int state_id)
+{
+    // Find the state with the current id.
+    for (std::vector<CControllerState*>::iterator it = m_vStates.begin(); it != m_vStates.end(); ++it)
+    {
+        if ((*it)->m_iStateId == state_id)
+        {
+            return *it;
+        }
+    }
+
+    std::cout << "Current state id " << m_iCurrentState << " not found." << std::endl;
+    return nullptr;
 }

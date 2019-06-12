@@ -7,6 +7,9 @@ int main()
     perceptron_network_test_1();
     perceptron_network_test_2();
     state_machine_test_1_state();
+    condition_test();
+    transition_test();
+    transitioned_state_test();
     return 0;
 }
 

@@ -29,8 +29,6 @@ public:
      */
     virtual int next_state(const std::vector<Real> inputs) = 0;
 
-protected:
-
     const int m_iStateId;
 
 private:
@@ -53,6 +51,8 @@ public:
     std::vector<Real> activate(const std::vector<Real> inputs) override;
 
     CControllerState *current_state();
+
+    CControllerState *get_state(int state_id);
 
 private:
     int m_iCurrentState;
