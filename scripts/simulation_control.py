@@ -2,11 +2,20 @@ from time import sleep
 
 import rospy
 import roslaunch
+from examples.experiment_functions import FFControllerFactory, SMControllerFactory
 from ma_evolution.msg import Score
 from ma_evolution.srv import Trajectory, StateRequest, SimScore
+from neat.state_machine_network import StateMachineNetwork
+from neat.state_selector_network import StateSelectorNetwork
 from std_srvs.srv import Empty
 
-from argos_experiment_runner import controller_selector
+from message_parsing import NEATROSEncoder, SMROSEncoder, SMSROSEncoder
+
+controller_selector = {
+    'feed-forward': (FFControllerFactory(), NEATROSEncoder),
+    'state-machine': (SMControllerFactory(StateMachineNetwork), SMROSEncoder),
+    'state-selector': (SMControllerFactory(StateSelectorNetwork), SMSROSEncoder)
+}
 
 
 class SimulationCommunicator:
