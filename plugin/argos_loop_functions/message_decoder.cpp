@@ -8,6 +8,10 @@
 #include "../argos_ros_bot/transition_state_machine.h"
 #include "../argos_ros_bot/state_machine_controller.h"
 #include "ma_evolution/WeightVector.h"
+#include "ma_evolution/SMGenome.h"
+#include "ma_evolution/SMState.h"
+#include "ma_evolution/SMTransition.h"
+#include "ma_evolution/SMCondition.h"
 #include <vector>
 
 
@@ -15,11 +19,9 @@ CRobotController *decode_genome(const ma_evolution::SMGenome& msg)
 {
     std::vector<CControllerState*> states;
 
-    std::cout << typeid(msg.states).name() << std::endl;
-
+    // Generate all the states.
     for (std::vector<ma_evolution::SMState>::const_iterator it = msg.states.begin(); it != msg.states.end(); ++it)
     {
-
         // Copy the biases.
         std::vector<Real> biases(it->biases);
 
@@ -36,8 +38,26 @@ CRobotController *decode_genome(const ma_evolution::SMGenome& msg)
         states.emplace_back(new_state);
     }
 
-    CRobotController *new_controller = new CStateMachineController(msg.key, msg.gen_hash, states);
+    CStateMachineController *new_controller = new CStateMachineController(msg.key, msg.gen_hash, states);
+
+    // Add the transitions to the states.
+    for (std::vector<ma_evolution::SMTransition>::const_iterator it = msg.transitions.begin();
+            it != msg.transitions.end(); ++it)
+    {
+        CTransitionedState *state = (CTransitionedState*) new_controller->get_state(it->source);
+
+        // Add all the conditions
+        std::vector<CCondition> conditions;
+        for (std::vector<ma_evolution::SMCondition>::const_iterator cit = it->conditions.begin();
+             cit != it->conditions.end(); ++cit)
+        {
+            CCondition condition(cit->inputSensor, cit->comp_operator, cit->comparator_value);
+            conditions.emplace_back(condition);
+        }
+
+        CStateTransition transition(it->source, it->dest, it->enabled, conditions);
+        state->add_transition(transition);
+    }
 
     return new_controller;
-    //TODO: add transition decoding.
 }

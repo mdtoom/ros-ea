@@ -96,7 +96,7 @@ protected:
 
 private:
     /** This variable stores the genomes that need to be evaluated on this controller. */
-    CGenomeReceiver<ma_evolution::SMGenome> m_cGenomeReceiver;
+    CGenomeBuffer *m_cGenomeBuffer;
 
     Real m_fFitnessPower;
 
@@ -105,6 +105,8 @@ private:
 
     int m_iExecutedSteps;
     int m_iTargetExecutedSteps;
+
+    int m_iCurrentGenHash;
 
 };
 

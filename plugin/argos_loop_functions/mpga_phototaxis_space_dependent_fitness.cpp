@@ -118,7 +118,7 @@ Real CMPGAPhototaxisStateDependentFitnessFunction::CalculateStepScore()
             min_index = i;
         }
     }
-    return m_vLocationFitness[min_index];
+    return m_vLocationFitness[min_index] + minLength;
 }
 
 

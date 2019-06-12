@@ -35,16 +35,15 @@ ros::NodeHandle* CMPGAPhototaxisObstacleLoopFunctions::nodeHandle = initROS();
 
 CMPGAPhototaxisObstacleLoopFunctions::CMPGAPhototaxisObstacleLoopFunctions() :
     m_fScore(0), m_fMaxDistance(maxDistance), m_pcFootBot(NULL), m_pcRNG(NULL), m_fFitnessPower(FITNESS_POWER_DEFAULT),
-    m_cGenomeReceiver(nodeHandle), m_iExecutedSteps(0), m_iTargetExecutedSteps(600)
+    m_cGenomeBuffer(NULL), m_iExecutedSteps(0), m_iTargetExecutedSteps(600)
 { }
-
-//TODO: make time steps changeable
 
 /****************************************/
 /****************************************/
 
 CMPGAPhototaxisObstacleLoopFunctions::~CMPGAPhototaxisObstacleLoopFunctions()
 {
+    delete m_cGenomeBuffer;
     delete m_pcFootBot;
 }
 
@@ -59,9 +58,26 @@ void CMPGAPhototaxisObstacleLoopFunctions::Init(TConfigurationNode& t_node)
 
     // Set the power attribute which is used for deciding the power of the fitness calculation.
     GetNodeAttributeOrDefault(t_node, "fitness_power", m_fFitnessPower, m_fFitnessPower);
+    // Set the number of time steps the simulation has to run.
+    GetNodeAttributeOrDefault(t_node, "simulation_time_steps", m_iTargetExecutedSteps, m_iTargetExecutedSteps);
 
     SetStartLocation();
 
+    std::string controller_nm = "state-machine";
+
+    GetNodeAttributeOrDefault(t_node, "controller_nm", controller_nm, controller_nm);
+
+    if (!controller_nm.compare("state-machine")) {
+        m_cGenomeBuffer = new CGenomeReceiver<ma_evolution::SMGenome>(nodeHandle);
+        LOG << "State machine controller selected." << std::endl;
+    } else if (!controller_nm.compare("feed-forward")) {
+        m_cGenomeBuffer = new CGenomeReceiver<ma_evolution::NEATGenome>(nodeHandle);
+        LOG << "Feed forward controller selected." << std::endl;
+    } else {
+        LOG << "No valid controller selected, exiting." << std::endl;
+        LOG.Flush();
+        exit(0);
+    }
 
     // Register the get score service of the node of the simulation.
     m_pcScoreService = nodeHandle->
@@ -79,6 +95,9 @@ void CMPGAPhototaxisObstacleLoopFunctions::Init(TConfigurationNode& t_node)
     m_pcFootBot = new CFootBotEntity("fb", "argos_ros_bot");
     AddEntity(*m_pcFootBot);
     Reset();
+
+    LOG << "Simulation initialized" << std::endl;
+    LOG.Flush();
 }
 
 /****************************************/
@@ -172,15 +191,13 @@ void CMPGAPhototaxisObstacleLoopFunctions::PreStep()
     if (controller.get_controller() == nullptr)
     {   // If no controller is currently evaluated.
 
-        while(!m_cGenomeReceiver.has_next() && ros::ok())
+        while(!m_cGenomeBuffer->has_next() && ros::ok())
         {   // Wait until a new genome arrives
-            ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(0.1));
-            LOG << "No genome available, waiting." << std::endl;
-            LOG.Flush();
+            ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(1.0));
         }
 
         Reset();
-        CRobotController *new_controller = m_cGenomeReceiver.next();
+        CRobotController *new_controller = m_cGenomeBuffer->next();
         controller.set_controller(new_controller);
     }
 

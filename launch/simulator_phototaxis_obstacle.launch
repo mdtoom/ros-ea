@@ -8,33 +8,21 @@
     <group ns="sim1">
         <node pkg="ma_evolution" type="argos_launcher.py" name="argos_launcher" output="screen"
               args="/home/matthijs/Documents/ros_ws/src/ma_evolution/argos_worlds/obstacle_light_no_gui_1.argos" />
-
-        <node pkg="ma_evolution" type="argos_experiment_runner.py" name="argos_experiment_runner" output="screen"
-              args="$(arg controller) $(arg time_steps) $(arg num_inputs) $(arg num_outputs)" />
     </group>
 
     <group ns="sim2">
         <node pkg="ma_evolution" type="argos_launcher.py" name="argos_launcher" output="screen"
               args="/home/matthijs/Documents/ros_ws/src/ma_evolution/argos_worlds/obstacle_light_no_gui_1.argos" />
-
-        <node pkg="ma_evolution" type="argos_experiment_runner.py" name="argos_experiment_runner" output="screen"
-              args="$(arg controller) $(arg time_steps) $(arg num_inputs) $(arg num_outputs)" />
     </group>
 
     <group ns="sim3">
         <node pkg="ma_evolution" type="argos_launcher.py" name="argos_launcher" output="screen"
               args="/home/matthijs/Documents/ros_ws/src/ma_evolution/argos_worlds/obstacle_light_no_gui_1.argos" />
-
-        <node pkg="ma_evolution" type="argos_experiment_runner.py" name="argos_experiment_runner" output="screen"
-              args="$(arg controller) $(arg time_steps) $(arg num_inputs) $(arg num_outputs)" />
     </group>
 
     <group ns="sim4">
         <node pkg="ma_evolution" type="argos_launcher.py" name="argos_launcher" output="screen"
               args="/home/matthijs/Documents/ros_ws/src/ma_evolution/argos_worlds/obstacle_light_no_gui_1.argos" />
-
-        <node pkg="ma_evolution" type="argos_experiment_runner.py" name="argos_experiment_runner" output="screen"
-              args="$(arg controller) $(arg time_steps) $(arg num_inputs) $(arg num_outputs)" />
     </group>
 
 </launch>

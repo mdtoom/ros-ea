@@ -10,31 +10,10 @@
 #include "message_decoder.h"
 #include "../argos_ros_bot/robot_controller.h"
 
-/** This class subscribes to /genome_topic and receives and stores the genomes in a queue. */
-template <class T> class CGenomeReceiver
+/** This class stores genomes that are ready to be evaluated. */
+class CGenomeBuffer
 {
 public:
-
-    CGenomeReceiver(ros::NodeHandle* nodeHandle)
-    {
-        std::stringstream genome_topic_str;
-        genome_topic_str << nodeHandle->getNamespace() << "/genome_topic";
-        m_pcGenomeSub = nodeHandle->subscribe(genome_topic_str.str(), 1000, &CGenomeReceiver::receive_genome, this);
-    }
-
-    /**
-     * This is a callback function for when a genome is received.
-     * @param msg       - message containing the genome.
-     */
-    void receive_genome(const T& msg)
-    {
-        CRobotController *controller = decode_genome(msg);
-        m_qControllerQueue.push(controller);
-
-        LOG << "Received genome" << std::endl;
-        LOG.Flush();
-    }
-
     bool has_next()
     {
         return !m_qControllerQueue.empty();
@@ -51,13 +30,53 @@ public:
         return next_controller;
     }
 
-private:
+protected:
 
     /** This queue holds all controllers that need to be evaluated. */
     std::queue<CRobotController*> m_qControllerQueue;
+};
+
+/** This class subscribes to /genome_topic and receives and stores the genomes in a queue. */
+template <class T> class CGenomeReceiver : public CGenomeBuffer
+{
+public:
+
+    CGenomeReceiver(ros::NodeHandle* nodeHandle) : m_iCurrentGenHash(-1)
+    {
+        std::stringstream genome_topic_str;
+        genome_topic_str << nodeHandle->getNamespace() << "/genome_topic";
+        m_pcGenomeSub = nodeHandle->subscribe(genome_topic_str.str(), 1000, &CGenomeReceiver::receive_genome, this);
+    }
+
+protected:
+
+    /**
+     * This is a callback function for when a genome is received.
+     * @param msg       - message containing the genome.
+     */
+    void receive_genome(const T& msg)
+    {
+        if (msg.gen_hash != m_iCurrentGenHash)
+        {
+            // Clearing the queue
+            while (!m_qControllerQueue.empty())
+            {
+                m_qControllerQueue.pop();
+            }
+            m_iCurrentGenHash = msg.gen_hash;
+            LOG << "Different gen hash received, clearing queue" << std::endl;
+        }
+
+        CRobotController *controller = decode_genome(msg);
+        m_qControllerQueue.push(controller);
+    }
+
+private:
 
     /** This subscribes ensures receiving the genomes. */
     ros::Subscriber m_pcGenomeSub;
+
+    int m_iCurrentGenHash;
 
 };
 
