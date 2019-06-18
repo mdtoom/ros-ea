@@ -58,14 +58,13 @@ void CMPGAPhototaxisObstacleLoopFunctions::Init(TConfigurationNode& t_node)
 
     // Set the power attribute which is used for deciding the power of the fitness calculation.
     GetNodeAttributeOrDefault(t_node, "fitness_power", m_fFitnessPower, m_fFitnessPower);
-    // Set the number of time steps the simulation has to run.
-    GetNodeAttributeOrDefault(t_node, "simulation_time_steps", m_iTargetExecutedSteps, m_iTargetExecutedSteps);
 
     SetStartLocation();
 
-    std::string controller_nm = "state-machine";
-
-    GetNodeAttributeOrDefault(t_node, "controller_nm", controller_nm, controller_nm);
+    // Get the user defined parameters.
+    std::string controller_nm;
+    nodeHandle->getParam("/controller_type", controller_nm);
+    nodeHandle->getParam("/time_steps", m_iTargetExecutedSteps);
 
     if (!controller_nm.compare("state-machine")) {
         m_cGenomeBuffer = new CGenomeReceiver<ma_evolution::SMGenome>(nodeHandle);
@@ -78,6 +77,8 @@ void CMPGAPhototaxisObstacleLoopFunctions::Init(TConfigurationNode& t_node)
         LOG.Flush();
         exit(0);
     }
+
+    LOG << "Number of timesteps: " << m_iTargetExecutedSteps << std::endl;
 
     // Register the get score service of the node of the simulation.
     m_pcScoreService = nodeHandle->
