@@ -1,6 +1,6 @@
 #include "perceptron_network_test.h"
 #include "state_machine_test.h"
-
+#include "neat_test.h"
 
 int main()
 {
@@ -10,6 +10,8 @@ int main()
     condition_test();
     transition_test();
     transitioned_state_test();
+    neat_state_test();
+    neat_algorithm_test();
     return 0;
 }
 

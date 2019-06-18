@@ -12,6 +12,11 @@ Real sigmoid(Real input)
     return 1.0 / (1.0 + exp(-input));
 }
 
+Real linear(Real input)
+{   // This mapping does not change the input value but just returns it.
+    return input;
+}
+
 Real sum(std::vector<Real> input_vector)
 {
     Real sum_of_elems = 0.0;
@@ -26,6 +31,7 @@ activation_map create_activation_map()
     activation_map mapping;
     mapping["tanh"] = &tanh;
     mapping["sigmoid"] = &sigmoid;
+    mapping["none"] = &linear;
     return mapping;
 }
 
