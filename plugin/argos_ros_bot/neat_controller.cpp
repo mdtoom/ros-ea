@@ -73,6 +73,11 @@ CNeatNetwork::CNeatNetwork(int id, int gen_id, int num_outputs, std::vector<CNea
     }
 }
 
+CNeatNetwork::~CNeatNetwork()
+{
+    m_vNodes.clear();
+}
+
 std::vector<Real> CNeatNetwork::activate(std::vector<Real> inputs)
 {
     std::map<int, Real> evaluated_nodes;
@@ -110,11 +115,7 @@ std::vector<Real> CNeatNetwork::activate(std::vector<Real> inputs)
         std::cout << "]" << std::endl;
 #endif
 
-        std::cout << "l";
-
     } while(not_found_all && evaluated_one);
-
-    std::cout << std::endl;
 
     // Store all the outputs in the return vector.
     std::vector<Real> outputs;

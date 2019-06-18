@@ -7,11 +7,15 @@
 #include "../argos_ros_bot/robot_controller.h"
 #include "../argos_ros_bot/transition_state_machine.h"
 #include "../argos_ros_bot/state_machine_controller.h"
+#include "../argos_ros_bot/neat_controller.h"
 #include "ma_evolution/WeightVector.h"
 #include "ma_evolution/SMGenome.h"
 #include "ma_evolution/SMState.h"
 #include "ma_evolution/SMTransition.h"
 #include "ma_evolution/SMCondition.h"
+#include "ma_evolution/NEATGenome.h"
+#include "ma_evolution/NNode.h"
+#include "ma_evolution/NConnection.h"
 #include <vector>
 
 
@@ -60,4 +64,21 @@ CRobotController *decode_genome(const ma_evolution::SMGenome& msg)
     }
 
     return new_controller;
+}
+
+CRobotController *decode_genome(const ma_evolution::NEATGenome& msg)
+{
+    std::vector<CNeatNode> nodes;
+    for (auto enc_node : msg.nodes)
+    {
+        nodes.emplace_back(CNeatNode(enc_node.key, enc_node.activation, enc_node.aggregation, enc_node.bias));
+    }
+
+    std::vector<CNeatConnection> connections;
+    for (auto enc_conn : msg.connections)
+    {
+        connections.emplace_back(CNeatConnection(enc_conn.source, enc_conn.dest, enc_conn.enabled, enc_conn.weight));
+    }
+
+    return new CNeatNetwork(msg.key, msg.gen_hash, msg.num_outputs, connections, nodes);
 }

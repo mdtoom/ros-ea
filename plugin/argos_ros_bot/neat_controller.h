@@ -61,6 +61,8 @@ public:
     CNeatNetwork(int id, int gen_id, int num_outputs,
             std::vector<CNeatConnection> connections, std::vector<CNeatNode> nodes);
 
+    ~CNeatNetwork();
+
     /** This function should execute the controller. */
     virtual std::vector<Real> activate(std::vector<Real> inputs);
 
