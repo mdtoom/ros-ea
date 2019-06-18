@@ -1,12 +1,3 @@
-// ROS Stuff #include "ros/ros.h"
-#include "ma_evolution/Puck.h"
-#include "ma_evolution/PuckList.h"
-#include "ma_evolution/Proximity.h"
-#include "ma_evolution/ProximityList.h"
-#include "ma_evolution/Light.h"
-#include "ma_evolution/LightList.h"
-#include "beginner_tutorials/AddTwoInts.h"
-
 /* Include the controller definition */
 #include "argos_ros_bot.h"
 /* Function definitions for XML parsing */
@@ -15,8 +6,6 @@
 #include <argos3/core/utility/math/vector2.h>
 
 using namespace std;
-using namespace ma_evolution;
-
 
 /****************************************/
 /****************************************/
