@@ -26,7 +26,7 @@ def draw_trajectory(scenario_nm, loc_list, output_file):
     plt.legend()
     plt.xlim((0, 5))
     plt.ylim((-1.5, 6.5))
-    plt.savefig(output_file)
+    plt.savefig(output_file, bbox_inches='tight')
 
 
 def draw_scenario(namespace, axis):
