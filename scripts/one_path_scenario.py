@@ -19,7 +19,7 @@ if __name__ == '__main__':
 
     simulation_base_directory = expanduser("~") + '/Desktop/one_path/'
 
-    config_location = 'config-feedforward-no-structural'
+    config_location = 'configs/config-feedforward-no-structural'
     base_directory = simulation_base_directory + 'obstacle_light_one_layer/'
 
     # Create learning configuration.
@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
     sleep(2)
 
-    config_location = 'config-sm_state_species'
+    config_location = 'configs/config-sm_state_species'
     base_directory = simulation_base_directory + 'sm_new/'
 
     # Create learning configuration.
@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
     sleep(2)
 
-    config_location = 'config-sm_selector'
+    config_location = 'configs/config-sm_selector'
     base_directory = simulation_base_directory + 'sm_selector/'
 
     # Create learning configuration.
@@ -65,7 +65,7 @@ if __name__ == '__main__':
 
     sleep(2)
 
-    config_location = 'config-feedforward-2-hidden-layers'
+    config_location = 'configs/config-feedforward-2-hidden-layers'
     base_directory = simulation_base_directory + 'two-layer-nn/'
 
     # Create learning configuration.

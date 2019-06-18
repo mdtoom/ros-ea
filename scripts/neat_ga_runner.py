@@ -10,7 +10,7 @@ def neat_run():
 
     num_generations = 100
     num_runs = 5
-    config_location = 'config-feedforward'
+    config_location = 'configs/config-feedforward'
     base_directory = expanduser("~") + '/Desktop/obstacle_light_neat2/'
     launch_file = 'sim_phototaxis_obst_new_fitness.launch'
 

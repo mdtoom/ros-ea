@@ -69,7 +69,7 @@ if __name__ == '__main__':
     num_runs = 5
 
     # Create learning configuration.
-    nn_config_location = 'config-feedforward-no-structural'
+    nn_config_location = 'configs/config-feedforward-no-structural'
     local_dir = os.path.dirname(__file__)
     config_path = os.path.join(local_dir, nn_config_location)
     config_nn = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -87,7 +87,7 @@ if __name__ == '__main__':
     #                             config_path)
 
     # Create learning configuration.
-    sm_free_config_location = 'config-sm_free_states'
+    sm_free_config_location = 'configs/config-sm_free_states'
     config_path = os.path.join(local_dir, sm_free_config_location)
     config_sm = neat.Config(StateMachineGenome,
                          ReproductionMutationOnly,
@@ -107,7 +107,7 @@ if __name__ == '__main__':
 
     base_directory = simulation_base_directory + 'state_selector/'
 
-    ss_config_location = 'config-sm_selector'
+    ss_config_location = 'configs/config-sm_selector'
     config_path = os.path.join(local_dir, ss_config_location)
     config = neat.Config(StateSelectorGenome,
                          ReproductionStateMachineOnly,

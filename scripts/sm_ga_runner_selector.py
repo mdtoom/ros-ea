@@ -16,7 +16,7 @@ from predefined_experiments import ss_based_experiment
 
 
 def run_sm_selector():
-    config_location = 'config-sm_selector'
+    config_location = 'configs/config-sm_selector'
     num_generations = 100
     num_runs = 5
     base_directory = expanduser("~") + '/Desktop/sm_selector/'

@@ -10,7 +10,7 @@ def one_layer_run():
 
     num_generations = 100
     num_runs = 5
-    config_location = 'config-feedforward-no-structural'
+    config_location = 'configs/config-feedforward-no-structural'
     base_directory = expanduser("~") + '/Desktop/obstacle_light_one_layer/'
     launch_file = 'sim_phototaxis_obst_new_fitness.launch'
 

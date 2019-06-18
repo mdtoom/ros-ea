@@ -9,7 +9,7 @@ from predefined_experiments import sm_based_experiment
 
 
 def sm_run():
-    config_location = 'config-sm_free_states'
+    config_location = 'configs/config-sm_free_states'
     num_generations = 100
     num_runs = 5
     base_directory = expanduser("~") + '/Desktop/sm/'

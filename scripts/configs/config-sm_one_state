@@ -32,20 +32,20 @@ state_delete_prob        = 0.0
 
 # connection enable options
 enabled_default         = True
-enabled_mutate_rate     = 0.01
+enabled_mutate_rate     = 0.0
 
 feed_forward            = True
 initial_connection      = full
 
 # transition add/remove rates
-transition_add_prob     = 0.05
-transition_delete_prob  = 0.05
+transition_add_prob     = 0.0
+transition_delete_prob  = 0.0
 
 # network parameters
 num_initial_states      = 1
 num_inputs              = 24
 num_outputs             = 2
-max_num_states          = 5
+max_num_states          = 1
 
 # connection weight options
 weight_init_mean        = 0.0

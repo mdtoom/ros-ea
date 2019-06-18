@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
     sleep(2)
 
-    config_location = 'config-sm_one_state'
+    config_location = 'configs/config-sm_one_state'
     base_directory = simulation_base_directory + 'sm_new/'
 
     # Create learning configuration.
