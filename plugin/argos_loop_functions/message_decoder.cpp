@@ -6,6 +6,7 @@
 
 #include "../argos_ros_bot/robot_controller.h"
 #include "../argos_ros_bot/transition_state_machine.h"
+#include "../argos_ros_bot/selector_state_machine.h"
 #include "../argos_ros_bot/state_machine_controller.h"
 #include "../argos_ros_bot/neat_controller.h"
 #include "ma_evolution/WeightVector.h"
@@ -17,6 +18,18 @@
 #include "ma_evolution/NNode.h"
 #include "ma_evolution/NConnection.h"
 #include <vector>
+
+std::vector<std::vector<Real>> decode_weight_vector(const std::vector<ma_evolution::WeightVector>& weight_vector)
+{
+    std::vector<std::vector<Real>> weights;
+    for (std::vector<ma_evolution::WeightVector>::const_iterator wit = weight_vector.begin();
+         wit != weight_vector.end(); ++wit)
+    {
+        weights.emplace_back(std::vector<Real>(wit->weights));
+    }
+
+    return weights;
+}
 
 
 CRobotController *decode_genome(const ma_evolution::SMGenome& msg)
@@ -30,12 +43,7 @@ CRobotController *decode_genome(const ma_evolution::SMGenome& msg)
         std::vector<Real> biases(it->biases);
 
         // Copy the weights
-        std::vector<std::vector<Real>> weights;
-        for (std::vector<ma_evolution::WeightVector>::const_iterator wit = it->weight_vec.begin();
-                wit != it->weight_vec.end(); ++wit)
-        {
-            weights.emplace_back(std::vector<Real>(wit->weights));
-        }
+        std::vector<std::vector<Real>> weights = decode_weight_vector(it->weight_vec);
 
         CPerceptronNetwork pn(weights, biases, it->activation, it->aggregation);
         CControllerState *new_state = new CTransitionedState(it->key, pn);
@@ -81,4 +89,39 @@ CRobotController *decode_genome(const ma_evolution::NEATGenome& msg)
     }
 
     return new CNeatNetwork(msg.key, msg.gen_hash, msg.num_outputs, connections, nodes);
+}
+
+CRobotController *decode_genome(const ma_evolution::SMSGenome& msg)
+{
+    std::vector<CControllerState*> states;
+
+    // Generate all the states.
+    for (auto &enc_state : msg.states)
+    {
+        // Copy the biases.
+        std::vector<Real> biases(enc_state.biases);
+
+        // Copy the weights
+        std::vector<std::vector<Real>> weights = decode_weight_vector(enc_state.weight_vec);
+
+        CPerceptronNetwork pn(weights, biases, enc_state.activation, enc_state.aggregation);
+
+        // Now find the corresponding selector state and create a new selector state
+        for (auto enc_selector_state : msg.selectors)
+        {
+            if (enc_selector_state.key == enc_state.key)
+            {   // If the corresponding selector state is found create a new state.
+
+                std::vector<std::vector<Real>> sel_weights = decode_weight_vector(enc_selector_state.weight_vec);
+                CPerceptronNetwork selector_pn(sel_weights, enc_selector_state.biases,
+                        enc_selector_state.activation, enc_selector_state.aggregation);
+
+                CControllerState *new_state = new CSelectorState(enc_state.key, pn, selector_pn);
+                states.emplace_back(new_state);
+            }
+        }
+    }
+
+    CStateMachineController *new_controller = new CStateMachineController(msg.key, msg.gen_hash, states);
+    return new_controller;
 }

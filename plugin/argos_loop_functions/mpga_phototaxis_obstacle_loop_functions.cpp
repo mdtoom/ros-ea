@@ -69,6 +69,9 @@ void CMPGAPhototaxisObstacleLoopFunctions::Init(TConfigurationNode& t_node)
     if (!controller_nm.compare("state-machine")) {
         m_cGenomeBuffer = new CGenomeReceiver<ma_evolution::SMGenome>(nodeHandle);
         LOG << "State machine controller selected." << std::endl;
+    } else if (!controller_nm.compare("state-selector")) {
+        m_cGenomeBuffer = new CGenomeReceiver<ma_evolution::SMSGenome>(nodeHandle);
+        LOG << "State selector controller selected." << std::endl;
     } else if (!controller_nm.compare("feed-forward")) {
         m_cGenomeBuffer = new CGenomeReceiver<ma_evolution::NEATGenome>(nodeHandle);
         LOG << "Feed forward controller selected." << std::endl;

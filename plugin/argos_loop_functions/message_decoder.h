@@ -7,6 +7,7 @@
 
 #include "../argos_ros_bot/robot_controller.h"
 #include "ma_evolution/SMGenome.h"
+#include "ma_evolution/SMSGenome.h"
 #include "ma_evolution/NEATGenome.h"
 
 /**
@@ -22,5 +23,15 @@ CRobotController *decode_genome(const ma_evolution::SMGenome& msg);
  * @return          - Controller that can be executed.
  */
 CRobotController *decode_genome(const ma_evolution::NEATGenome& msg);
+
+/**
+ * This function decodes a SMSGenome (state machine selected) message into a valid controller.
+ * @param msg       - Message that contains the genome.
+ * @return          - Controller that can be executed on the robot.
+ */
+CRobotController *decode_genome(const ma_evolution::SMSGenome& msg);
+
+
+
 
 #endif //MA_EVOLUTION_MESSAGE_DECODER_H

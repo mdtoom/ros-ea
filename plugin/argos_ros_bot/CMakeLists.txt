@@ -4,6 +4,7 @@ add_library(robot_controllers SHARED
         state_machine_controller.h state_machine_controller.cpp
         neat_controller.h neat_controller.cpp
         transition_state_machine.h transition_state_machine.cpp
+        selector_state_machine.h selector_state_machine.cpp
         )
 
 add_library(argos_ros_bot SHARED argos_ros_bot.h argos_ros_bot.cpp)
