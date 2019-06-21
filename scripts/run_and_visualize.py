@@ -68,7 +68,7 @@ if __name__ == '__main__':
 
     encoder = None
     if my_argv[1] == 'feed-forward':
-        encoder = NEATROSEncoder()
+        encoder = NEATROSEncoder(2)
         print('Going for feed-forward controller')
     elif my_argv[1] == 'state-machine':
         encoder = SMROSEncoder()

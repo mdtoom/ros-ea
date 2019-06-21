@@ -28,16 +28,29 @@ def sum_and_average(folders):
             best_fitnesses = [c.fitness for c in stats.most_fit_genomes]
             max_per_gen.append(best_fitnesses)
 
+        # Make sure all runs are of equal length.
+        max_generations = max(len(gen) for gen in max_per_gen)
+        max_per_gen = [gen + [gen[-1]] * (max_generations - len(gen)) for gen in max_per_gen]
+
+        print([len(x) for x in max_per_gen])
         max_per_gen = np.array(max_per_gen)
-        avg_max_per_gen = sum(max_per_gen) / max_per_gen.shape[0]
+        avg_max_per_gen = sum(max_per_gen)
+        avg_max_per_gen /= max_per_gen.shape[0]
         avg_max_fitnesses.append(avg_max_per_gen)
+
+    # Ensure that the all experiments are padded to the max number of generations.
+    max_length = max(len(experiment) for experiment in avg_max_fitnesses)
+    print(max_length)
+
+    print(experiment for experiment in avg_max_fitnesses)
+    avg_max_fitnesses = [list(experiment) + [experiment[-1]] * (max_length - len(experiment)) for experiment in avg_max_fitnesses]
 
     # Make the plot
     for folder, avg_max_per_gen in zip(folders, avg_max_fitnesses):
-        plt.plot(list(range(len(avg_max_per_gen))), avg_max_per_gen, label=folder)
+        plt.plot(list(range(len(avg_max_per_gen))), avg_max_per_gen, label=folder.replace('/', ''))
 
     plt.xlim((0, len(avg_max_fitnesses[0])))
-    plt.ylim((0, 450))
+    plt.ylim((0, 500))
     plt.xlabel('generation')
     plt.ylabel('fitness')
     plt.title('Average fitness per generation for phototaxis with obstacles')

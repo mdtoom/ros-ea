@@ -3,6 +3,18 @@ import pickle
 import rospy
 
 
+def gather_winner_genomes(base_dir):
+    genome_locations = glob.glob(base_dir + 'winner*.pickle')
+    genomes = []
+    for genome_location in genome_locations:
+        # Load and encode the genome.
+        with open(genome_location, 'rb') as handle:
+            genome = pickle.load(handle)
+            genomes.append(genome)
+
+    return genomes
+
+
 class GenomeAnalysisTool:
     """ This class is the base class for analysis tools that work on winner genome files. """
 
@@ -11,13 +23,7 @@ class GenomeAnalysisTool:
         self.base_dir = base_dir
         self.encoder = encoder
 
-        genome_locations = glob.glob(base_dir + 'winner*.pickle')
-        self.genomes = []
-        for genome_location in genome_locations:
-            # Load and encode the genome.
-            with open(genome_location, 'rb') as handle:
-                genome = pickle.load(handle)
-                self.genomes.append(genome)
+        self.genomes = gather_winner_genomes(base_dir)
 
     def run_genome(self, sc, genome):
 
