@@ -21,6 +21,11 @@ class StatesToCSV(GenomeAnalysisTool):
             with open(self.base_dir + trajectory_file_name, 'w'):
                 pass        # Clear the csv file, since we are doing append.
 
+            # Clear the states file.
+            if hasattr(genome, 'states'):
+                with open(self.base_dir + 'state_usages.csv', 'w'):
+                    pass
+
             for genome in self.genomes:
 
                 self.run_genome(sc, genome)
