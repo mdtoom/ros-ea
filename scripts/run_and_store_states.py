@@ -22,7 +22,7 @@ class StatesToCSV(GenomeAnalysisTool):
                 pass        # Clear the csv file, since we are doing append.
 
             # Clear the states file.
-            if hasattr(genome, 'states'):
+            if hasattr(self.genomes[0], 'states'):
                 with open(self.base_dir + 'state_usages.csv', 'w'):
                     pass
 
