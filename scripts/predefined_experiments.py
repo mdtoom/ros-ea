@@ -42,8 +42,8 @@ def ss_based_experiment(launch_file, config, base_directory, num_generations, nu
 
 
 def sm_based_experiment(launch_file, config, base_directory, num_generations, num_runs,
-                        experiment_class=ROSSimultaneRobotExperiment):
-    sim_control = SimulationController('ma_evolution', launch_file, 'state-machine')
+                        experiment_class=ROSSimultaneRobotExperiment, controller_nm='state-machine'):
+    sim_control = SimulationController('ma_evolution', launch_file, controller_nm)
     sim_control.start_simulators()
     controller_keeper = None
     try:

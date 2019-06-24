@@ -41,12 +41,21 @@ template <class T> class CGenomeReceiver : public CGenomeBuffer
 {
 public:
 
-    CGenomeReceiver(ros::NodeHandle* nodeHandle) : m_iCurrentGenHash(-1)
+    CGenomeReceiver(ros::NodeHandle* nodeHandle) : m_iCurrentGenHash(-1), m_fDecodeFunction(&decode_genome)
     {
         std::stringstream genome_topic_str;
         genome_topic_str << nodeHandle->getNamespace() << "/genome_topic";
         m_pcGenomeSub = nodeHandle->subscribe(genome_topic_str.str(), 1000, &CGenomeReceiver::receive_genome, this);
     }
+
+
+    CGenomeReceiver(ros::NodeHandle* nodeHandle, CRobotController *(*decode_function)(const T&))
+        : CGenomeReceiver(nodeHandle)
+    {
+        m_fDecodeFunction = decode_function;
+    }
+
+
 
 protected:
 
@@ -67,7 +76,7 @@ protected:
             LOG << "Different gen hash received, clearing queue" << std::endl;
         }
 
-        CRobotController *controller = decode_genome(msg);
+        CRobotController *controller = m_fDecodeFunction(msg);
         m_qControllerQueue.push(controller);
     }
 
@@ -77,6 +86,8 @@ private:
     ros::Subscriber m_pcGenomeSub;
 
     int m_iCurrentGenHash;
+
+    CRobotController *(*m_fDecodeFunction)(const T&);
 
 };
 

@@ -31,7 +31,12 @@ CRobotController *decode_genome(const ma_evolution::NEATGenome& msg);
  */
 CRobotController *decode_genome(const ma_evolution::SMSGenome& msg);
 
-
+/**
+ * This function decodes a fixed 2 state message, where the controller switches states when an object is to close.
+ * @param msg       - Genome message
+ * @return          - Controller build of genome message.
+ */
+CRobotController *decode_fixed_2_states(const ma_evolution::SMGenome& msg);
 
 
 #endif //MA_EVOLUTION_MESSAGE_DECODER_H

@@ -75,6 +75,9 @@ void CMPGAPhototaxisObstacleLoopFunctions::Init(TConfigurationNode& t_node)
     } else if (!controller_nm.compare("feed-forward")) {
         m_cGenomeBuffer = new CGenomeReceiver<ma_evolution::NEATGenome>(nodeHandle);
         LOG << "Feed forward controller selected." << std::endl;
+    } else if (!controller_nm.compare("fixed-2-states")) {
+        m_cGenomeBuffer = new CGenomeReceiver<ma_evolution::SMGenome>(nodeHandle, &decode_fixed_2_states);
+        LOG << "Fixed-2-state controller selected." << std::endl;
     } else {
         LOG << "No valid controller selected, exiting." << std::endl;
         LOG.Flush();

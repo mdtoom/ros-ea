@@ -8,6 +8,7 @@
 #include "../argos_ros_bot/transition_state_machine.h"
 #include "../argos_ros_bot/selector_state_machine.h"
 #include "../argos_ros_bot/state_machine_controller.h"
+#include "../argos_ros_bot/fixed_two_state_controller.h"
 #include "../argos_ros_bot/neat_controller.h"
 #include "ma_evolution/WeightVector.h"
 #include "ma_evolution/SMGenome.h"
@@ -18,6 +19,7 @@
 #include "ma_evolution/NNode.h"
 #include "ma_evolution/NConnection.h"
 #include <vector>
+#include <cassert>
 
 std::vector<std::vector<Real>> decode_weight_vector(const std::vector<ma_evolution::WeightVector>& weight_vector)
 {
@@ -124,4 +126,22 @@ CRobotController *decode_genome(const ma_evolution::SMSGenome& msg)
 
     CStateMachineController *new_controller = new CStateMachineController(msg.key, msg.gen_hash, states);
     return new_controller;
+}
+
+CRobotController *decode_fixed_2_states(const ma_evolution::SMGenome& msg)
+{
+    assert(msg.states.size() == 2);
+
+    // Decode the first state
+    std::vector<std::vector<Real>> weights0 = decode_weight_vector(msg.states[0].weight_vec);
+    CPerceptronNetwork pn0(weights0, msg.states[0].biases, msg.states[0].activation, msg.states[0].aggregation);
+    CTransitionedState state1(msg.states[0].key, pn0);
+
+    // Decode the second state
+    std::vector<std::vector<Real>> weights1 = decode_weight_vector(msg.states[1].weight_vec);
+    CPerceptronNetwork pn1(weights1, msg.states[1].biases, msg.states[1].activation, msg.states[1].aggregation);
+    CTransitionedState state2(msg.states[1].key, pn1);
+
+    // Create the new controller
+    return new CFixedTwoStateController(msg.key, msg.gen_hash, state1, state2);
 }
