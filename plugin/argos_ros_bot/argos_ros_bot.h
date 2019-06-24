@@ -11,7 +11,7 @@
 
 #include <argos3/core/control_interface/ci_controller.h>
 #include <argos3/plugins/robots/generic/control_interface/ci_differential_steering_actuator.h>
-#include <argos3/plugins/robots/foot-bot/control_interface/ci_footbot_proximity_sensor.h>
+#include <argos3/plugins/robots/generic/control_interface/ci_proximity_sensor.h>
 #include <argos3/plugins/robots/foot-bot/control_interface/ci_footbot_light_sensor.h>
 #include <argos3/plugins/robots/generic/control_interface/ci_colored_blob_omnidirectional_camera_sensor.h>
 #include <ros/ros.h>
@@ -67,7 +67,7 @@ public:
 private:
 
   CCI_DifferentialSteeringActuator* m_pcWheels;
-  CCI_FootBotProximitySensor* m_pcProximity;
+  CCI_ProximitySensor* m_pcProximity;
   CCI_FootBotLightSensor* m_pcLight;
 
   // The following constant values were copied from the argos source tree from

@@ -22,7 +22,7 @@ void CArgosRosBot::Init(TConfigurationNode& t_node)
 {
     // Get sensor/actuator handles
     m_pcWheels = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
-    m_pcProximity = GetSensor<CCI_FootBotProximitySensor>("footbot_proximity");
+    m_pcProximity = GetSensor<CCI_ProximitySensor>("proximity");
     m_pcLight = GetSensor<CCI_FootBotLightSensor>("footbot_light");
 }
 
@@ -37,7 +37,7 @@ void CArgosRosBot::ControlStep() {
     } else {
 
         // Read the sensors.
-        const CCI_FootBotProximitySensor::TReadings& tProxReads = m_pcProximity->GetReadings();
+        const std::vector<Real>& tProxReads = m_pcProximity->GetReadings();
         const CCI_FootBotLightSensor::TReadings& tLightReads = m_pcLight->GetReadings();
 
         // Create a vector for the sensor readings.
@@ -45,7 +45,7 @@ void CArgosRosBot::ControlStep() {
 
         for (size_t i = 0; i < tProxReads.size(); ++i)
         {
-            sensor_readings[i] = tProxReads[i].Value;
+            sensor_readings[i] = tProxReads[i];
         }
 
         for (size_t i = 0; i < tLightReads.size(); ++i) {
