@@ -35,8 +35,7 @@
 
     </controllers>
 
-    <loop_functions library="libmpga_phototaxis_space_dependent_function"
-                    label="mpga_phototaxis_space_dependent_function" />
+    <loop_functions library="libgenome_runner_loop_functions" label="genome_runner_loop_functions" />
 
     <!-- *********************** -->
     <!-- * Arena configuration * -->
