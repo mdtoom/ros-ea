@@ -1,33 +1,25 @@
 //
-// Created by matthijs on 22-5-19.
+// Created by matthijs on 26-6-19.
 //
 
-#include "mpga_phototaxis_space_dependent_fitness.h"
-
+#include "space_dependent_fitness_function.h"
 #include <queue>
-#include <string>
-#include <limits>
-#include <algorithm>
-#include <argos3/plugins/simulator/entities/light_entity.h>
+#include <argos3/core/simulator/medium/medium.h>
 
 #define FITNESS_STEP_SIZE 0.25
+
+using namespace argos;
 
 template <class T> bool inVector(std::vector<T> vector, T element)
 {
     return std::find(vector.begin(), vector.end(), element) != vector.end();
 }
 
-
-CMPGAPhototaxisStateDependentFitnessFunction::CMPGAPhototaxisStateDependentFitnessFunction()
+CSpaceDependentFitnessFunction::CSpaceDependentFitnessFunction(CFootBotEntity &robot_entity, Real fitness_power,
+                                                               CLoopFunctions& loop_function)
+    : CAbsoluteDistanceFitnessFunction(robot_entity, fitness_power)
 {
-    m_fMaxDistance = 0.0;
-}
-
-
-void CMPGAPhototaxisStateDependentFitnessFunction::Init(TConfigurationNode& t_node) {
-    CMPGAPhototaxisObstacleLoopFunctions::Init(t_node);
-
-    CRange<CVector3> arenaLimits = GetSpace().GetArenaLimits();
+    CRange<CVector3> arenaLimits = loop_function.GetSpace().GetArenaLimits();
     std::queue<CVector3> toVisitLocations;
     std::vector<CVector3> locationDepth;
     std::vector<Real> locationDistances;
@@ -47,7 +39,7 @@ void CMPGAPhototaxisStateDependentFitnessFunction::Init(TConfigurationNode& t_no
 
         // Check if not already evaluated and if location does not contain an obstacle.
         if (!inVector(m_vFitnessMeasureLocation, loc) &&
-            MoveEntity(m_pcFootBot->GetEmbodiedEntity(), groundLocation, CQuaternion(), true))
+            loop_function.MoveEntity(m_cRobotEntity.GetEmbodiedEntity(), groundLocation, CQuaternion(), true))
         {
             // Put the vector in the list with evaluated genomes.
             locationDepth.emplace_back(toEval);
@@ -66,10 +58,6 @@ void CMPGAPhototaxisStateDependentFitnessFunction::Init(TConfigurationNode& t_no
                     }
                 }
             }
-            // TODO: write fitness that finds closest nodes and takes its distance as length.
-            // Location sensitive hashing?
-            // Fetch 4 closest locations and take minimum.
-
         }
     }
 
@@ -78,32 +66,14 @@ void CMPGAPhototaxisStateDependentFitnessFunction::Init(TConfigurationNode& t_no
     // Setup the fitness vector
     for (Real distance : locationDistances)
     {
-        m_vLocationFitness.emplace_back(calculateFitness(distance));
+        m_vLocationFitness.emplace_back(calculate_distance_based_fitness(distance));
     }
-
-//    // Adds lights to every data point.
-//    int count = 0;
-//    for (int i = 0; i < m_vFitnessMeasureLocation.size(); i++)
-//    {
-//        // Add light for the view.
-//        CVector3 lightLocation(m_vFitnessMeasureLocation[i].GetX(), m_vFitnessMeasureLocation[i].GetY(), m_vLocationFitness[i] * 2);
-//        CLightEntity *pcLight = new CLightEntity(std::to_string(count), lightLocation, CColor::WHITE, 1.0);
-//        AddEntity(*pcLight);
-//        count++;
-//    }
 }
 
-bool CMPGAPhototaxisStateDependentFitnessFunction::within2DBorders(CVector3 &loc, CRange<CVector3> &areaLimits)
-{
-    return loc[0] < areaLimits.GetMax()[0] && loc[0] > areaLimits.GetMin()[0]
-           && loc[1] < areaLimits.GetMax()[1] && loc[1] > areaLimits.GetMin()[1];
-}
-
-
-Real CMPGAPhototaxisStateDependentFitnessFunction::CalculateStepScore()
+void CSpaceDependentFitnessFunction::post_step_evaluation()
 {
     // Find the known point closest to the current point of the robot.
-    CVector3 robotPosition = m_pcFootBot->GetEmbodiedEntity().GetOriginAnchor().Position;
+    CVector3 robotPosition = m_cRobotEntity.GetEmbodiedEntity().GetOriginAnchor().Position;
 
     Real minLength = std::numeric_limits<float>::max();
     int min_index = 0;
@@ -118,11 +88,13 @@ Real CMPGAPhototaxisStateDependentFitnessFunction::CalculateStepScore()
             min_index = i;
         }
     }
-    return m_vLocationFitness[min_index] + minLength;
+
+    m_fScore += m_vLocationFitness[min_index] + minLength;
 }
 
 
-/****************************************/
-/****************************************/
-
-REGISTER_LOOP_FUNCTIONS(CMPGAPhototaxisStateDependentFitnessFunction, "mpga_phototaxis_space_dependent_function")
+bool CSpaceDependentFitnessFunction::within2DBorders(CVector3 &loc, CRange<CVector3> &areaLimits)
+{
+    return loc[0] < areaLimits.GetMax()[0] && loc[0] > areaLimits.GetMin()[0]
+           && loc[1] < areaLimits.GetMax()[1] && loc[1] > areaLimits.GetMin()[1];
+}

@@ -35,19 +35,19 @@ public:
 
     virtual void PostStep();
 
-    /** This function returns the latest trajectory of the robot until reset. */
-    virtual bool GetTrajectory(ma_evolution::Trajectory::Request& request,
-            ma_evolution::Trajectory::Response& response);
-
-    /** This function returns the state history of the robot until reset. */
-    virtual bool GetStateHistory(ma_evolution::StateRequest::Request& request,
-            ma_evolution::StateRequest::Response& response);
-
     // We need only a single ROS node, although there are individual publishers
     // and subscribers for each instance of the class.
     static ros::NodeHandle* nodeHandle;
 
 protected:
+
+    /** This function returns the latest trajectory of the robot until reset. */
+    virtual bool GetTrajectory(ma_evolution::Trajectory::Request& request,
+                               ma_evolution::Trajectory::Response& response);
+
+    /** This function returns the state history of the robot until reset. */
+    virtual bool GetStateHistory(ma_evolution::StateRequest::Request& request,
+                                 ma_evolution::StateRequest::Response& response);
 
     /** This function sets the initial location of the robot. */
     virtual void SetStartLocation();

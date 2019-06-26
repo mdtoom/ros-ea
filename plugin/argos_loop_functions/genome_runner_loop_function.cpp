@@ -1,9 +1,5 @@
-#include "mpga_phototaxis_obstacle_loop_functions.h"
+#include "genome_runner_loop_function.h"
 
-#include <argos3/core/simulator/simulator.h>
-#include <argos3/core/simulator/entity/positional_entity.h>
-#include <argos3/core/utility/math/vector3.h>
-#include <cmath>
 #include <iostream>
 #include <sstream>
 #include <ros/callback_queue.h>
@@ -16,19 +12,14 @@
 
 using namespace argos;
 
-#define FITNESS_POWER_DEFAULT 3            // This define is used to indicate the shape of the fitness function.
-
-const Real maxDistance = 11.0;      // Constant used to indicate the max distance from the robot to the light.
-
-CMPGAPhototaxisObstacleLoopFunctions::CMPGAPhototaxisObstacleLoopFunctions() : CRobotLaunchingLoopFunction(),
-    m_fScore(0), m_fMaxDistance(maxDistance), m_fFitnessPower(FITNESS_POWER_DEFAULT),
+CGenomeRunnerLoopFunction::CGenomeRunnerLoopFunction() : CFitnessEvaluatingLoopFunction(),
     m_cGenomeBuffer(NULL), m_iExecutedSteps(0), m_iTargetExecutedSteps(600)
 { }
 
 /****************************************/
 /****************************************/
 
-CMPGAPhototaxisObstacleLoopFunctions::~CMPGAPhototaxisObstacleLoopFunctions()
+CGenomeRunnerLoopFunction::~CGenomeRunnerLoopFunction()
 {
     delete m_cGenomeBuffer;
 }
@@ -36,12 +27,11 @@ CMPGAPhototaxisObstacleLoopFunctions::~CMPGAPhototaxisObstacleLoopFunctions()
 /****************************************/
 /****************************************/
 
-void CMPGAPhototaxisObstacleLoopFunctions::Init(TConfigurationNode& t_node)
+void CGenomeRunnerLoopFunction::Init(TConfigurationNode& t_node)
 {
-    CRobotLaunchingLoopFunction::Init(t_node);
+    CFitnessEvaluatingLoopFunction::Init(t_node);
 
-    // Set the power attribute which is used for deciding the power of the fitness calculation.
-    GetNodeAttributeOrDefault(t_node, "fitness_power", m_fFitnessPower, m_fFitnessPower);
+    m_pcScorePublisher = nodeHandle->advertise<ma_evolution::Score>("score_topic", 100);
 
     // Get the user defined parameters.
     std::string controller_nm;
@@ -67,13 +57,6 @@ void CMPGAPhototaxisObstacleLoopFunctions::Init(TConfigurationNode& t_node)
     }
 
     LOG << "Number of timesteps: " << m_iTargetExecutedSteps << std::endl;
-
-    // Register the get score service of the node of the simulation.
-    m_pcScoreService = nodeHandle->
-            advertiseService("score", &CMPGAPhototaxisObstacleLoopFunctions::GetScore, this);
-
-    m_pcScorePublisher = nodeHandle->advertise<ma_evolution::Score>("score_topic", 100);
-
     LOG << "genome receiving loop function initialized" << std::endl;
     LOG.Flush();
 }
@@ -81,35 +64,22 @@ void CMPGAPhototaxisObstacleLoopFunctions::Init(TConfigurationNode& t_node)
 /****************************************/
 /****************************************/
 
-void CMPGAPhototaxisObstacleLoopFunctions::Reset()
+void CGenomeRunnerLoopFunction::Reset()
 {
-    CRobotLaunchingLoopFunction::Reset();
-    m_fScore = 0;
+    CFitnessEvaluatingLoopFunction::Reset();
     m_iExecutedSteps = 0;
 }
 
 /****************************************/
 /****************************************/
 
-bool CMPGAPhototaxisObstacleLoopFunctions::GetScore(ma_evolution::SimScore::Request& request,
-                                            ma_evolution::SimScore::Response& response)
-{
-    Real score = Score();
-    response.score = (float) score;
-    return true;
-}
-
-/****************************************/
-/****************************************/
-
-void CMPGAPhototaxisObstacleLoopFunctions::PreStep()
+void CGenomeRunnerLoopFunction::PreStep()
 {
     CArgosRosBot &controller = (CArgosRosBot&) m_pcFootBot->GetControllableEntity().GetController();
     ros::getGlobalCallbackQueue()->callAvailable();
 
     if (controller.get_controller() == nullptr)
     {   // If no controller is currently evaluated.
-
         while(!m_cGenomeBuffer->has_next() && ros::ok())
         {   // Wait until a new genome arrives
             ros::getGlobalCallbackQueue()->callAvailable(ros::WallDuration(1.0));
@@ -131,11 +101,9 @@ void CMPGAPhototaxisObstacleLoopFunctions::PreStep()
 /****************************************/
 /****************************************/
 
-void CMPGAPhototaxisObstacleLoopFunctions::PostStep()
+void CGenomeRunnerLoopFunction::PostStep()
 {
-    CRobotLaunchingLoopFunction::PostStep();
-
-    m_fScore += CalculateStepScore();
+    CFitnessEvaluatingLoopFunction::PostStep();
     m_iExecutedSteps++;
 
     if (m_pcFootBot->GetEmbodiedEntity().IsCollidingWithSomething() || m_iExecutedSteps >= m_iTargetExecutedSteps)
@@ -148,7 +116,7 @@ void CMPGAPhototaxisObstacleLoopFunctions::PostStep()
         ma_evolution::Score scoreMsg;
         scoreMsg.key = current_controller->m_iID;
         scoreMsg.gen_hash = current_controller->m_iGenerationID;
-        scoreMsg.score = m_fScore;
+        scoreMsg.score = m_pFitnessFunction->get_fitness();
         m_pcScorePublisher.publish(scoreMsg);
 
         controller.set_controller(nullptr);     // Set that no controller is currently on the robot.
@@ -159,35 +127,4 @@ void CMPGAPhototaxisObstacleLoopFunctions::PostStep()
 /****************************************/
 /****************************************/
 
-Real CMPGAPhototaxisObstacleLoopFunctions::Score() {
-   /* The performance is simply the distance of the robot to the origin */
-
-    return m_fScore;
-}
-
-/****************************************/
-/****************************************/
-
-Real CMPGAPhototaxisObstacleLoopFunctions::CalculateStepScore()
-{
-    CPositionalEntity& light = (CPositionalEntity&) CSimulator::GetInstance().GetSpace().GetEntity("light");
-    CVector3 robotPosition = m_pcFootBot->GetEmbodiedEntity().GetOriginAnchor().Position;
-    CVector3 lightPosition = light.GetPosition();
-    lightPosition.SetZ(robotPosition.GetZ());
-    CVector3 differenceVector = robotPosition - lightPosition;
-
-    // Get points for closeness to light, as long as the robot did not collide.
-    return calculateFitness(differenceVector.Length());
-}
-
-Real CMPGAPhototaxisObstacleLoopFunctions::calculateFitness(Real distance)
-{
-    Real normalizedDistance = 1.0 - distance / m_fMaxDistance;
-    return pow(normalizedDistance, m_fFitnessPower);
-}
-
-
-/****************************************/
-/****************************************/
-
-REGISTER_LOOP_FUNCTIONS(CMPGAPhototaxisObstacleLoopFunctions, "mpga_phototaxis_obstacle_loop_functions")
+REGISTER_LOOP_FUNCTIONS(CGenomeRunnerLoopFunction, "genome_runner_loop_functions")

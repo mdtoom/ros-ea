@@ -46,7 +46,7 @@ void CRobotLaunchingLoopFunction::Init(TConfigurationNode& t_node)
     // Create the foot-bot and get a reference to its controller
     m_pcFootBot = new CFootBotEntity("fb", "argos_ros_bot");
     AddEntity(*m_pcFootBot);
-    Reset();
+    CRobotLaunchingLoopFunction::Reset();
 
     LOG << "Robot loop function initialized" << std::endl;
     LOG.Flush();
@@ -138,15 +138,11 @@ void CRobotLaunchingLoopFunction::gather_controller_states()
     CArgosRosBot &controller = (CArgosRosBot&) m_pcFootBot->GetControllableEntity().GetController();
     CRobotController *current_controller = controller.get_controller();
 
-    LOG << current_controller->m_vStateHistory[0] << std::endl;
-
-    LOG.Flush();
-
     // Copy the states the controller has been in.
     m_vControllerStates.clear();
-//    for (std::vector<int>::iterator it = current_controller->m_vStateHistory.begin();
-//         it != current_controller->m_vStateHistory.end(); ++it)
-//    {
-//        m_vControllerStates.push_back(*it);
-//    }
+    for (std::vector<int>::iterator it = current_controller->m_vStateHistory.begin();
+         it != current_controller->m_vStateHistory.end(); ++it)
+    {
+        m_vControllerStates.push_back(*it);
+    }
 }
