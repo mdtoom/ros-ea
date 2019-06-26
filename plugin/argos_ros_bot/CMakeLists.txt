@@ -6,6 +6,7 @@ add_library(robot_controllers SHARED
         transition_state_machine.h transition_state_machine.cpp
         selector_state_machine.h selector_state_machine.cpp
         fixed_two_state_controller.h fixed_two_state_controller.cpp
+        right_hand_controller.h right_hand_controller.cpp
         )
 
 add_library(argos_ros_bot SHARED argos_ros_bot.h argos_ros_bot.cpp)

@@ -63,7 +63,7 @@ void CRobotLaunchingLoopFunction::SetStartLocation() {
     /* Set orientation */
     CRadians cOrient = m_pcRNG->Uniform(CRadians::UNSIGNED_RANGE);
     m_vecResetLocation.Orientation.FromEulerAngles(
-            cOrient,        // rotation around Z
+            CRadians::ZERO,        // rotation around Z
             CRadians::ZERO, // rotation around Y
             CRadians::ZERO  // rotation around X
     );

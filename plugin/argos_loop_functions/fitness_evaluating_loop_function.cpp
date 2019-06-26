@@ -5,6 +5,7 @@
 #include "fitness_evaluating_loop_function.h"
 
 #include "fitness_functions/space_dependent_fitness_function.h"
+#include <ros/callback_queue.h>
 
 #define FITNESS_POWER_DEFAULT 3
 
@@ -61,4 +62,5 @@ void CFitnessEvaluatingLoopFunction::PostStep()
 {
     CRobotLaunchingLoopFunction::PostStep();
     m_pFitnessFunction->post_step_evaluation();
+    ros::getGlobalCallbackQueue()->callAvailable();
 }

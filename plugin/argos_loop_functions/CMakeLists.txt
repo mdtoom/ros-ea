@@ -33,4 +33,18 @@ target_link_libraries(genome_runner_loop_functions
         argos_ros_bot
         fitness_evaluating_loop_function)
 
+add_library(right_hand_rule_loop_functions SHARED
+        right_hand_rule_loop_function.h right_hand_rule_loop_function.cpp
+        )
+
+target_link_libraries(genome_runner_loop_functions
+        argos3core_simulator
+        argos3plugin_simulator_dynamics2d
+        argos3plugin_simulator_entities
+        argos3plugin_simulator_footbot
+        argos3plugin_simulator_genericrobot
+        argos3plugin_simulator_media
+        argos_ros_bot
+        fitness_evaluating_loop_function)
+
 
