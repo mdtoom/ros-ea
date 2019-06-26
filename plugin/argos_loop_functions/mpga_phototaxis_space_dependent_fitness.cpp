@@ -47,7 +47,7 @@ void CMPGAPhototaxisStateDependentFitnessFunction::Init(TConfigurationNode& t_no
 
         // Check if not already evaluated and if location does not contain an obstacle.
         if (!inVector(m_vFitnessMeasureLocation, loc) &&
-            MoveEntity(m_pcFootBot->GetEmbodiedEntity(), groundLocation, m_vecResetLocation.Orientation, true))
+            MoveEntity(m_pcFootBot->GetEmbodiedEntity(), groundLocation, CQuaternion(), true))
         {
             // Put the vector in the list with evaluated genomes.
             locationDepth.emplace_back(toEval);

@@ -1,4 +1,5 @@
 add_library(mpga_phototaxis_obstacle_loop_functions SHARED
+        robot_launching_loop_function.h robot_launching_loop_function.cpp
         mpga_phototaxis_obstacle_loop_functions.h mpga_phototaxis_obstacle_loop_functions.cpp
         genome_receiver.h
         message_decoder.h message_decoder.cpp
