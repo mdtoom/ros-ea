@@ -54,12 +54,17 @@ void CArgosRosBot::ControlStep() {
 
         // Activate the controller.
         std::vector<Real> outputs = m_cController->activate(sensor_readings);
-        Real v = outputs[0];
-        Real w = outputs[1];
+//        Real v = outputs[0];
+//        Real w = outputs[1];
+//
+//        // Use the kinematics of a differential-drive robot to derive the left and right wheel speeds.
+//        leftSpeed = (v - HALF_BASELINE * w) / WHEEL_RADIUS;
+//        rightSpeed = (v + HALF_BASELINE * w) / WHEEL_RADIUS;
 
-        // Use the kinematics of a differential-drive robot to derive the left and right wheel speeds.
-        leftSpeed = (v - HALF_BASELINE * w) / WHEEL_RADIUS;
-        rightSpeed = (v + HALF_BASELINE * w) / WHEEL_RADIUS;
+        Real speed_multiplier = 50.0;
+        leftSpeed = outputs[0] * speed_multiplier;
+        rightSpeed = outputs[1] * speed_multiplier;
+
         m_pcWheels->SetLinearVelocity(leftSpeed, rightSpeed);
     }
 }
