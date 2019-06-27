@@ -34,7 +34,13 @@ def draw_scenario(namespace, axis):
 
     draw_function = borders
 
-    if '4' in namespace:
+    if 'alt1' in namespace:
+        draw_function = alt_scenario1
+    elif 'alt2' in namespace:
+        draw_function = alt_scenario2
+    elif 'alt3' in namespace:
+        draw_function = alt_scenario3
+    elif '4' in namespace:
         draw_function = scenario4
     elif '3' in namespace:
         draw_function = scenario3
@@ -90,10 +96,42 @@ def scenario4(ax):
     ax.add_collection(collection)
 
 
+def alt_scenario1(ax):
+    borders(ax)
+
+    patches = [Rectangle((3.25, -0.5), 0.5, 2.0)]
+    collection = PatchCollection(patches)
+    ax.add_collection(collection)
+
+
+def alt_scenario2(ax):
+    borders(ax)
+
+    patches = [Rectangle((1.25, 1.25), 2.5, 0.5),
+               Rectangle((1.25, -0.75), 2.5, 0.5),
+               Rectangle((1.25, -0.5), 0.5, 2.0)]
+
+    collection = PatchCollection(patches)
+    ax.add_collection(collection)
+
+
+def alt_scenario3(ax):
+    borders(ax)
+
+    patches = [Rectangle((1.25, 0.5), 2.5, 0.5),
+               Rectangle((3.25, -0.5), 0.5, 2.0),
+               Rectangle((-0.25, 3.5), 2.5, 0.5),
+               Rectangle((1.75, 2.5), 0.5, 1.5),
+               Rectangle((3.75, 2.5), 1.5, 0.5)]
+
+    collection = PatchCollection(patches)
+    ax.add_collection(collection)
+
+
 if __name__ == '__main__':
 
     ax = plt.gca()
-    scenario4(ax)
+    alt_scenario3(ax)
 
     plt.axis('scaled')
     plt.legend()
