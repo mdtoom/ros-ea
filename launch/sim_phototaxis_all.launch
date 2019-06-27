@@ -1,0 +1,47 @@
+<launch>
+
+    <arg name="time_steps" default="600"/>
+    <arg name="num_inputs" default="24"/>
+    <arg name="num_outputs" default="2"/>
+    <arg name="controller" default="state-machine"/>
+    <arg name="exp_folder" default="/home/matthijs/Documents/ros_ws/src/ma_evolution"/>
+
+    <param name="controller_type" value="$(arg controller)" type="str"/>
+    <param name="time_steps" value="$(arg time_steps)" type="int"/>
+
+    <group ns="sim1">
+        <node pkg="ma_evolution" type="argos_launcher.py" name="argos_launcher" output="screen"
+              args="$(arg exp_folder)/argos_worlds/obstacle_light_new_fitness_1.argos" />
+    </group>
+
+    <group ns="sim2">
+        <node pkg="ma_evolution" type="argos_launcher.py" name="argos_launcher" output="screen"
+              args="$(arg exp_folder)/argos_worlds/obstacle_light_new_fitness_2.argos" />
+    </group>
+
+    <group ns="sim3">
+        <node pkg="ma_evolution" type="argos_launcher.py" name="argos_launcher" output="screen"
+              args="$(arg exp_folder)/argos_worlds/obstacle_light_new_fitness_3.argos" />
+    </group>
+
+    <group ns="sim4">
+        <node pkg="ma_evolution" type="argos_launcher.py" name="argos_launcher" output="screen"
+              args="$(arg exp_folder)/argos_worlds/obstacle_light_new_fitness_4.argos" />
+    </group>
+
+    <group ns="sim5">
+        <node pkg="ma_evolution" type="argos_launcher.py" name="argos_launcher" output="screen"
+              args="$(arg exp_folder)/argos_worlds/obstacle_light_alt_1.argos" />
+    </group>
+
+    <group ns="sim6">
+        <node pkg="ma_evolution" type="argos_launcher.py" name="argos_launcher" output="screen"
+              args="$(arg exp_folder)/argos_worlds/obstacle_light_alt_2.argos" />
+    </group>
+
+    <group ns="sim7">
+        <node pkg="ma_evolution" type="argos_launcher.py" name="argos_launcher" output="screen"
+              args="$(arg exp_folder)/argos_worlds/one_path_course.argos" />
+    </group>
+
+</launch>

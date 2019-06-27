@@ -34,11 +34,11 @@ def draw_scenario(namespace, axis):
 
     draw_function = borders
 
-    if 'alt1' in namespace:
+    if 'alt1' in namespace or '5' in namespace:
         draw_function = alt_scenario1
-    elif 'alt2' in namespace:
+    elif 'alt2' in namespace or '6' in namespace:
         draw_function = alt_scenario2
-    elif 'alt3' in namespace:
+    elif 'alt3' in namespace or '7' in namespace:
         draw_function = alt_scenario3
     elif '4' in namespace:
         draw_function = scenario4
