@@ -3,7 +3,7 @@ from subprocess import CalledProcessError
 from neat import visualize
 
 
-def draw_sm(genome, config, file_name='winner.svg'):
+def draw_sm(genome, config, file_name='winner'):
     """ This function draws a state machine. """
     try:
         visualize.draw_state_machine(config, genome, filename=file_name)

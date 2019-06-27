@@ -42,17 +42,17 @@ class SimulationCommunicator:
         """ This function returns the last score of the simulator this runner controls."""
         rospy.wait_for_service(self.namespace + 'score')
         score_service = rospy.ServiceProxy(self.namespace + 'score', SimScore)
-        return score_service()
+        return score_service().score
 
     def get_trajectory(self):
         rospy.wait_for_service(self.namespace + 'trajectory')
         trajectory_service = rospy.ServiceProxy(self.namespace + 'trajectory', Trajectory)
-        return trajectory_service()
+        return trajectory_service().Locations
 
     def get_states(self):
         rospy.wait_for_service(self.namespace + 'states_request')
         state_service = rospy.ServiceProxy(self.namespace + 'states_request', StateRequest)
-        return state_service()
+        return state_service().StateSequence
 
     def callback(self, data):
         # Put the retrieved score in a list and notify (trough the condition) that a new score has arrived.

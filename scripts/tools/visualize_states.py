@@ -7,37 +7,56 @@ from matplotlib.ticker import MaxNLocator
 
 from neat.six_util import iteritems
 
+selection_opposite = {'controller': 'scenario', 'scenario': 'controller'}
 
-def visualize_scenario_state_usage(scenario_id, state_sequences):
-    """ This function visualizes that state usage per controller given a scenario and a set of controllers."""
 
-    scenario_nr = int(filter(str.isdigit, scenario_id))
+class StateUsageVisualizer:
 
-    num_controllers = len(state_sequences)
-    fig, axs = plt.subplots(num_controllers, 1)
+    def __init__(self, base_dir, selection_type, group_id):
+        self.base_dir = base_dir
+        self.selection_type = selection_type
+        self.group_id = group_id
+        self.state_sequences = []
 
-    fig.suptitle('State usages of controllers in scenario {0}'.format(scenario_nr))
+    def add_state_sequence(self, sequence_id, num_states, state_sequence):
+        self.state_sequences.append((sequence_id, num_states, state_sequence))
 
-    for i in range(num_controllers):
+    def add_genome_state_sequence(self, genome, state_sequence):
+        if hasattr(genome, 'states'):
+            self.state_sequences.append((genome.key, len(genome.states), state_sequence))
 
-        axs[i].set_ylim([0, state_sequences[i][1] - 1]) # Limit to the number of states
-        axs[i].yaxis.set_major_locator(MaxNLocator(integer=True))
-        axs[i].plot(state_sequences[i][2], label='controller id: {0}'.format(state_sequences[i][0]))
-        axs[i].legend()
+    def finalize(self):
+        """ This function visualizes that state usage per controller given a scenario and a set of controllers."""
+        len_of_group = len(self.state_sequences)
+        plt.clf()
+        fig, axs = plt.subplots(len_of_group, 1)
 
-        if i != num_controllers - 1:
-            plt.setp(axs[i].get_xticklabels(), visible=False)
+        fig.suptitle('State usages of {0} {1}'.format(self.selection_type, self.group_id))
 
-    plt.savefig(base_dir + 'state_usage_scenario_{0}.png'.format(scenario_nr))
+        for i in range(len_of_group):
+            axs[i].set_ylim([0, self.state_sequences[i][1] - 0.96])   # Limit to the number of states
+            axs[i].yaxis.set_major_locator(MaxNLocator(integer=True))
+            axs[i].plot(self.state_sequences[i][2],
+                        label='{0}: {1}'.format(selection_opposite[self.selection_type], self.state_sequences[i][0]))
+            axs[i].legend()
+
+            if i != len_of_group - 1:
+                plt.setp(axs[i].get_xticklabels(), visible=False)
+
+        plt.xlabel('time steps')
+        fig.text(0.06, 0.5, 'State', ha='center', va='center', rotation='vertical')
+
+        plt.savefig(self.base_dir + 'state_usage_{0}_{1}.png'.format(self.selection_type, self.group_id), bbox_inches='tight')
 
 
 if __name__ == '__main__':
 
-    if len(sys.argv) != 2:
-        print('Expected as argument the folder where the file can be found.')
+    if len(sys.argv) != 3:
+        print('Expected arguments: selection type (scenario | controller) and the folder where the file can be found.')
         exit(0)
 
-    base_dir = sys.argv[1]
+    selection_type = sys.argv[1]
+    base_dir = sys.argv[2]
 
     read_state_sequences = dict()
 
@@ -46,13 +65,23 @@ if __name__ == '__main__':
 
         for row in csv_reader:
 
-            if row[0] not in read_state_sequences:
-                read_state_sequences[row[0]] = []
+            if selection_type == 'scenario':
+                key = int(int(filter(str.isdigit, row[0])))
+                index = int(row[1])
+            elif selection_type == 'controller':
+                key = int(row[1])
+                index = int(int(filter(str.isdigit, row[0])))
+            else:
+                print('Unknown selection type')
+                exit(1)
 
-            read_state_sequences[row[0]].append((int(row[1]), int(row[2]), [int(x) for x in row[3:]]))
+            if key not in read_state_sequences:
+                read_state_sequences[key] = []
 
-    for sim, state_sequences in iteritems(read_state_sequences):
+            read_state_sequences[key].append((index, int(row[2]), [int(x) for x in row[3:]]))
 
-        visualize_scenario_state_usage(sim, state_sequences)
+    for key, state_sequences in iteritems(read_state_sequences):
 
-    plt.show()
+        visualizer = StateUsageVisualizer(base_dir, selection_type, key)
+        visualizer.state_sequences = state_sequences    # Cheat to not have to append them all.
+        visualizer.finalize()

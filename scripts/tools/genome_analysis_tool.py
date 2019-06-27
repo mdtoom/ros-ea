@@ -24,19 +24,3 @@ class GenomeAnalysisTool:
         self.encoder = encoder
 
         self.genomes = gather_winner_genomes(base_dir)
-
-    def run_genome(self, sc, genome):
-
-        sc.reset()
-        ros_encoded_genome = self.encoder.encode(genome, 0)
-
-        sc.condition_lock.acquire()
-        sc.publish_genome(ros_encoded_genome)
-
-        while not sc.condition_lock.wait(1.0):
-            if len(sc.retrieved_scores) == 1:
-                break
-
-            if rospy.is_shutdown():
-                exit(1)
-        sc.condition_lock.release()

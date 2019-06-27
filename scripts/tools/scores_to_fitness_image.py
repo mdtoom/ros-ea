@@ -14,7 +14,6 @@ def sum_and_average(folders):
     for folder in folders:
 
         stat_files = glob.glob(folder + 'stats*.pickle')
-
         max_per_gen = []
 
         print(stat_files)
@@ -45,12 +44,14 @@ def sum_and_average(folders):
     print(experiment for experiment in avg_max_fitnesses)
     avg_max_fitnesses = [list(experiment) + [experiment[-1]] * (max_length - len(experiment)) for experiment in avg_max_fitnesses]
 
+    max_score = max([max(gen) for gen in avg_max_fitnesses])
+
     # Make the plot
     for folder, avg_max_per_gen in zip(folders, avg_max_fitnesses):
         plt.plot(list(range(len(avg_max_per_gen))), avg_max_per_gen, label=folder.replace('/', ''))
 
     plt.xlim((0, len(avg_max_fitnesses[0])))
-    plt.ylim((0, 500))
+    plt.ylim((0, max_score + 100))
     plt.xlabel('generation')
     plt.ylabel('fitness')
     plt.title('Average fitness per generation for phototaxis with obstacles')
