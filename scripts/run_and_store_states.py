@@ -15,16 +15,16 @@ class StatesToCSV(GenomeAnalysisTool):
 
     def gather_states(self):
 
+        # Clear the states file.
+        if hasattr(self.genomes[0], 'states'):
+            with open(self.base_dir + 'state_usages.csv', 'w'):
+                pass
+
         for sc in self.sim_controllers:
 
             trajectory_file_name = 'scenario' + filter(str.isdigit, sc.namespace) + '.csv'
             with open(self.base_dir + trajectory_file_name, 'w'):
                 pass        # Clear the csv file, since we are doing append.
-
-            # Clear the states file.
-            if hasattr(self.genomes[0], 'states'):
-                with open(self.base_dir + 'state_usages.csv', 'w'):
-                    pass
 
             for genome in self.genomes:
 
