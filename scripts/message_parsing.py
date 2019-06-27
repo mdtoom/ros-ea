@@ -123,7 +123,13 @@ class SMROSEncoder(ROSEncoder):
         for transition_id, transition in iteritems(genome.transitions):
             enc_conditions = [SMCondition(condition[0], Condition.op_to_int(condition[1]), condition[2])
                               for condition in transition.conditions]
-            encoded_transition = SMTransition(transition_id[0], transition_id[1], transition.enabled, enc_conditions)
+
+            or_comparison = False           # To support legacy code, always make sure that it is in there.
+            if hasattr(transition, 'or_comparison'):
+                or_comparison = transition.or_comparison
+
+            encoded_transition = SMTransition(transition_id[0], transition_id[1],
+                                              transition.enabled, or_comparison, enc_conditions)
             encoded_transitions.append(encoded_transition)
 
         encoded_genome = SMGenome(genome.key, generation, encoded_transitions, encoded_states)

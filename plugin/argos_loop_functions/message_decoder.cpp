@@ -69,7 +69,7 @@ CRobotController *decode_genome(const ma_evolution::SMGenome& msg)
             conditions.emplace_back(condition);
         }
 
-        CStateTransition transition(it->source, it->dest, it->enabled, conditions);
+        CStateTransition transition(it->source, it->dest, it->enabled, it->or_comparison, conditions);
         state->add_transition(transition);
     }
 

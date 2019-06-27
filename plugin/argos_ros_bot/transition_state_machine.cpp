@@ -39,14 +39,29 @@ bool CCondition::evaluate(std::vector<Real> sensor_inputs)
     }
 }
 
-CStateTransition::CStateTransition(int begin_state, int end_state, bool enabled, std::vector <CCondition> conditions)
-                : m_iBeginState(begin_state), m_iEndState(end_state), m_vConditions(conditions), m_bEnabled(enabled)
+CStateTransition::CStateTransition(int begin_state, int end_state, bool enabled,  bool or_comparison,
+                                   std::vector <CCondition> conditions)
+    : m_iBeginState(begin_state), m_iEndState(end_state), m_vConditions(conditions), m_bEnabled(enabled),
+        m_bOrComparison(or_comparison)
 { }
 
 bool CStateTransition::evaluate(std::vector <Real> sensor_inputs)
 {
+    bool result;
+    if (m_bOrComparison)
+    {
+        result = evaluate_or(sensor_inputs);
+    } else {
+        result = evaluate_and(sensor_inputs);
+    }
+
+    return result && m_bEnabled;        // Only true when the transition is enabled.
+}
+
+bool CStateTransition::evaluate_and(std::vector <Real> sensor_inputs)
+{
     // Transition is taken if enabled and all conditions are true (or there are no conditions)
-    bool transition_taken = m_bEnabled;
+    bool transition_taken = true;
     for (std::vector<CCondition>::iterator it = m_vConditions.begin(); it != m_vConditions.end(); ++it)
     {
         transition_taken &= it->evaluate(sensor_inputs);
@@ -54,6 +69,16 @@ bool CStateTransition::evaluate(std::vector <Real> sensor_inputs)
     return transition_taken;
 }
 
+
+bool CStateTransition::evaluate_or(std::vector <Real> sensor_inputs)
+{
+    bool transition_taken = false;
+    for (auto condition : m_vConditions)
+    {
+        transition_taken |= condition.evaluate(sensor_inputs);
+    }
+    return transition_taken;
+}
 
 
 CTransitionedState::CTransitionedState(int state_id, const CPerceptronNetwork pn) :

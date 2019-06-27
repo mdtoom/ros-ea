@@ -71,12 +71,12 @@ void condition_test()
 void transition_test()
 {
     std::vector<CCondition> conditions;
-    CStateTransition transition(21, 22, false, conditions);
+    CStateTransition transition(21, 22, false, false, conditions);
     assert(transition.m_iEndState == 22);
     assert(transition.m_iBeginState == 21);
     assert(!transition.evaluate({0.0, 0.5}));
 
-    CStateTransition transition1(21, 22, true, conditions);
+    CStateTransition transition1(21, 22, true, false, conditions);
     assert(transition1.evaluate({0.0, 0.5}));
 
     // Check whether changing the vector also changes the transition.
@@ -84,27 +84,27 @@ void transition_test()
     assert(transition1.evaluate({0.0, 0.5}));
 
     // Check that a false condition does not evaluate the transition.
-    CStateTransition transition2(21, 22, true, conditions);
+    CStateTransition transition2(21, 22, true, false, conditions);
     assert(!transition2.evaluate({0.0, 0.5}));
 
     // Check that a true condition does evaluate the transition.
     conditions.clear();
     conditions.emplace_back(CCondition(1, 0, 0.5));
-    CStateTransition transition3(21, 22, true, conditions);
+    CStateTransition transition3(21, 22, true, false, conditions);
     assert(transition3.evaluate({0.0, 0.5}));
 
     // Check that a true and a false condition does not evaluate the transition.
     conditions.clear();
     conditions.emplace_back(CCondition(1, 0, 0.5));
     conditions.emplace_back(CCondition(0, 0, 0.5));
-    CStateTransition transition4(21, 22, true, conditions);
+    CStateTransition transition4(21, 22, true, false, conditions);
     assert(!transition4.evaluate({0.0, 0.5}));
 
     // Check that a true and a true condition does evaluate the transition.
     conditions.clear();
     conditions.emplace_back(CCondition(1, 0, 0.5));
     conditions.emplace_back(CCondition(0, 1, 0.5));
-    CStateTransition transition5(21, 22, true, conditions);
+    CStateTransition transition5(21, 22, true, false, conditions);
     assert(!transition5.evaluate({0.0, 0.5}));
 
     // Check that 3x true conditions do evaluate
@@ -112,7 +112,7 @@ void transition_test()
     conditions.emplace_back(CCondition(1, 1, 0.5));
     conditions.emplace_back(CCondition(0, 2, 0.5));
     conditions.emplace_back(CCondition(0, 0, 0.0));
-    CStateTransition transition6(21, 22, true, conditions);
+    CStateTransition transition6(21, 22, true, false, conditions);
     assert(transition6.evaluate({0.0, 1.0}));
 
     // Check that 3x false conditions do evaluate
@@ -120,7 +120,7 @@ void transition_test()
     conditions.emplace_back(CCondition(1, 2, 0.5));
     conditions.emplace_back(CCondition(0, 1, 0.5));
     conditions.emplace_back(CCondition(0, 0, 0.1));
-    CStateTransition transition7(21, 22, true, conditions);
+    CStateTransition transition7(21, 22, true, false, conditions);
     assert(!transition7.evaluate({0.0, 1.0}));
 
     // Check that true, true, false condition does evaluate
@@ -128,7 +128,7 @@ void transition_test()
     conditions.emplace_back(CCondition(1, 1, 0.5));
     conditions.emplace_back(CCondition(0, 2, 0.5));
     conditions.emplace_back(CCondition(0, 0, 0.1));
-    CStateTransition transition8(21, 22, true, conditions);
+    CStateTransition transition8(21, 22, true, false,conditions);
     assert(!transition8.evaluate({0.0, 1.0}));
 
     std::cout << "Passed transition test" << std::endl;
@@ -151,29 +151,29 @@ void transitioned_state_test()
     assert(state.next_state({0.0}) == 42);
 
     // Test True transition, no condition
-    state.add_transition(CStateTransition(42, 43, true, conditions));
+    state.add_transition(CStateTransition(42, 43, true, false, conditions));
     assert(state.next_state({0.0}) == 43);
 
     // Test False transition
     CTransitionedState state1(42, pn);
     conditions.clear();
     conditions.emplace_back(CCondition(0, 0, 0.1));
-    state1.add_transition(CStateTransition(42, 43, true, conditions));
+    state1.add_transition(CStateTransition(42, 43, true, false, conditions));
     assert(state1.next_state({0.0}) == 42);
 
     // Test true transition, one condition
     CTransitionedState state2(42, pn);
     conditions.clear();
     conditions.emplace_back(CCondition(0, 0, 0.0));
-    state2.add_transition(CStateTransition(42, 43, true, conditions));
+    state2.add_transition(CStateTransition(42, 43, true, false, conditions));
     assert(state2.next_state({0.0}) == 43);
 
     // Test multiple false transitions
     CTransitionedState state3(42, pn);
     conditions.clear();
     conditions.emplace_back(CCondition(0, 0, 0.1));
-    state3.add_transition(CStateTransition(42, 43, true, conditions));
-    state3.add_transition(CStateTransition(42, 44, true, conditions));
+    state3.add_transition(CStateTransition(42, 43, true, false, conditions));
+    state3.add_transition(CStateTransition(42, 44, true, false, conditions));
     assert(state3.next_state({0.0}) == 42);
 
     std::cout << "Transition state machine test passed." << std::endl;

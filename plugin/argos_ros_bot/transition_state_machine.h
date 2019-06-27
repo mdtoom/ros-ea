@@ -35,7 +35,7 @@ class CStateTransition
 
 public:
 
-    CStateTransition(int begin_state, int end_state, bool enabled, std::vector<CCondition> conditions);
+    CStateTransition(int begin_state, int end_state, bool enabled, bool or_comparison, std::vector<CCondition> conditions);
 
     /**
      * This function evaluates whether the transition should be taken.
@@ -47,8 +47,18 @@ public:
     int m_iBeginState;
     int m_iEndState;
 
+protected:
+
+    /** This function evaluates the conditions where all need to be true. */
+    bool evaluate_and(std::vector<Real> sensor_inputs);
+
+    /** This function evalutes the conditions where only one needs to be true. */
+    bool evaluate_or(std::vector<Real> sensor_inputs);
+
 private:
     std::vector<CCondition> m_vConditions;
+
+    bool m_bOrComparison;
 
     bool m_bEnabled;
 
