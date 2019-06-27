@@ -30,6 +30,9 @@ bias_replace_rate       = 0.1
 state_add_prob           = 0.0
 state_delete_prob        = 0.0
 
+or_comparison_default   = False
+or_comparison_mutate_rate = 0.05
+
 # connection enable options
 enabled_default         = True
 enabled_mutate_rate     = 0.0
