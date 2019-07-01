@@ -120,9 +120,9 @@ def alt_scenario3(ax):
 
     patches = [Rectangle((1.25, 0.5), 2.5, 0.5),
                Rectangle((3.25, -0.5), 0.5, 2.0),
-               Rectangle((-0.25, 3.5), 2.5, 0.5),
-               Rectangle((1.75, 2.5), 0.5, 1.5),
-               Rectangle((3.75, 2.5), 1.5, 0.5)]
+               Rectangle((-0.25, 3.25), 2.5, 0.5),
+               Rectangle((1.75, 2.25), 0.5, 1.5),
+               Rectangle((3.75, 2.25), 1.5, 0.5)]
 
     collection = PatchCollection(patches)
     ax.add_collection(collection)

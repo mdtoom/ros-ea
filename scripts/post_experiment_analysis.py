@@ -77,13 +77,14 @@ class AverageScoreWriter:
     def add_scores(self, scores):
         self.scores_per_scenario.append(scores)
 
-    def finalize(self):
+    def finalize(self, entry_name='w'):
 
         avg_scores = [sum(scores) / len(scores) for scores in self.scores_per_scenario]
         avg_fitness = sum(avg_scores) / len(avg_scores)
         avg_scores.append(avg_fitness)
-        score_dict = {'w': avg_scores }
+        score_dict = {entry_name: avg_scores}
         self.score_saver.write_scores('w', score_dict)
+        self.scores_per_scenario = []
 
 
 class PostExperimentAnalysis(GenomeAnalysisTool):
@@ -94,7 +95,8 @@ class PostExperimentAnalysis(GenomeAnalysisTool):
         if not isinstance(self.encoder, NEATROSEncoder):
             state_writer = StateWriter(self.base_dir + 'state_usages.csv')
 
-        avg_score_writer = AverageScoreWriter(self.base_dir + 'winner_scores.csv', [sm.namespace for sm in self.sim_controllers])
+        avg_score_writer = AverageScoreWriter(self.base_dir + 'winner_scores.csv',
+                                              [sm.namespace for sm in self.sim_controllers])
 
         for sc in self.sim_controllers:
 
