@@ -69,3 +69,5 @@ max_stagnation  = 100
 [DefaultReproduction]
 elitism            = 2
 survival_threshold = 0.2
+
+[DefaultGeneration]

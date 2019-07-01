@@ -70,3 +70,4 @@ max_stagnation  = 100
 elitism            = 2
 survival_threshold = 0.2
 
+[DefaultGeneration]

@@ -3,6 +3,9 @@ import os
 import neat
 
 from os.path import expanduser
+
+from neat.generation import DefaultGeneration
+
 from predefined_experiments import nn_based_experiment
 
 
@@ -19,6 +22,7 @@ def neat_run():
     config_path = os.path.join(local_dir, config_location)
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                         DefaultGeneration,
                          config_path)
 
     nn_based_experiment(launch_file, config, base_directory, num_generations, num_runs)

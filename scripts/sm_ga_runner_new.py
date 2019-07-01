@@ -7,7 +7,7 @@ import os
 from os.path import expanduser
 
 import neat
-
+from neat.generation import DefaultGeneration
 from neat.reproduction_state_machine import ReproductionStateMachineOnly, StateSeparatedSpeciesSet
 from neat.stagnation import MarkAllStagnation
 from neat.state_machine_full_genome import StateMachineFullGenome
@@ -29,6 +29,7 @@ def run_sm_new():
                          ReproductionStateMachineOnly,
                          StateSeparatedSpeciesSet,
                          MarkAllStagnation,
+                         DefaultGeneration,
                          config_path)
 
     sm_based_experiment(launch_file, config, base_directory, num_generations, num_runs)

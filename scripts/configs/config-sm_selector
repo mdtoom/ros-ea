@@ -105,3 +105,4 @@ survival_threshold = 0.2
 min_species_size   = 10
 max_num_states     = 5
 
+[DefaultGeneration]

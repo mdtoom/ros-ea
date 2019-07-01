@@ -3,6 +3,7 @@ import os
 from os.path import expanduser
 
 import neat
+from neat.generation import DefaultGeneration
 
 from neat.reproduction_state_machine import ReproductionStateMachineOnly, StateSeparatedSpeciesSet
 from neat.stagnation import MarkAllStagnation
@@ -24,6 +25,7 @@ def fixed_2_state_experiment():
                          ReproductionStateMachineOnly,
                          StateSeparatedSpeciesSet,
                          MarkAllStagnation,
+                         DefaultGeneration,
                          config_path)
 
     sm_based_experiment(launch_file, config, base_directory, num_generations, num_runs, controller_nm='fixed-2-states')

@@ -3,6 +3,7 @@ import os
 from os.path import expanduser
 
 import neat
+from neat.generation import DefaultGeneration
 from neat.reproduction_mutation_only import ReproductionMutationOnly
 from neat.state_machine_genome import StateMachineGenome
 from predefined_experiments import sm_based_experiment
@@ -22,6 +23,7 @@ def sm_run():
                          ReproductionMutationOnly,
                          neat.DefaultSpeciesSet,
                          neat.DefaultStagnation,
+                         DefaultGeneration,
                          config_path)
 
     sm_based_experiment(launch_file, config, base_directory, num_generations, num_runs)
