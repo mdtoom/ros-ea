@@ -27,17 +27,17 @@
                 <differential_steering implementation="default"/>
             </actuators>
             <sensors>
+<!--                <proximity implementation="default" show_rays="true" noise_level="0.2"/>-->
+<!--                <footbot_light implementation="rot_z_only" show_rays="true" noise_level="0.2"/>-->
                 <proximity implementation="default" show_rays="true"/>
                 <footbot_light implementation="rot_z_only" show_rays="true"/>
-                <colored_blob_omnidirectional_camera implementation="rot_z_only" medium="leds" show_rays="true"/>
             </sensors>
-            <params stopWithoutSubscriberCount="10" />
+            <params />
         </argos_ros_bot_controller>
 
     </controllers>
 
-    <loop_functions library="libgenome_runner_loop_functions"
-                    label="genome_runner_loop_functions" />
+    <loop_functions library="libgenome_runner_loop_functions" label="genome_runner_loop_functions" />
 
     <!-- *********************** -->
     <!-- * Arena configuration * -->
@@ -81,7 +81,7 @@
         </box>
 
         <light id="light"
-               position="4,2.5,1.5"
+               position="5,2.5,1.5"
                orientation="0,0,0"
                color="yellow"
                intensity="3"

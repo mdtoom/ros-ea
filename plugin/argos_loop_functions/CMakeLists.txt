@@ -18,6 +18,7 @@ target_link_libraries(fitness_evaluating_loop_function
 
 add_library(genome_runner_loop_functions SHARED
         genome_runner_loop_function.h genome_runner_loop_function.cpp
+        light_random_init_runner.cpp light_random_init_runner.h
         genome_receiver.h
         message_decoder.h message_decoder.cpp
         )

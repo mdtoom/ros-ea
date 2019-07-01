@@ -71,7 +71,7 @@
         </box>
 
         <light id="light"
-               position="4,2.5,1.5"
+               position="5,2.5,1.5"
                orientation="0,0,0"
                color="yellow"
                intensity="3"
