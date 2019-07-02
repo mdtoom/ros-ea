@@ -37,7 +37,7 @@
 
     </controllers>
 
-    <loop_functions library="libgenome_runner_loop_functions" label="right_hand_rule_loop_functions" />
+    <loop_functions library="libgenome_runner_loop_functions" label="random_light_runner_loop_functions" />
 
     <!-- *********************** -->
     <!-- * Arena configuration * -->
