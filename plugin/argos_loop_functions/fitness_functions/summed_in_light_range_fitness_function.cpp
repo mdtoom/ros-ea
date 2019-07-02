@@ -4,6 +4,10 @@
 
 #include "summed_in_light_range_fitness_function.h"
 
+#include <argos3/core/simulator/simulator.h>
+#include <argos3/core/utility/math/vector3.h>
+#include <argos3/core/simulator/entity/positional_entity.h>
+
 CSummedInLightRangeFitnessFunction::CSummedInLightRangeFitnessFunction(CFootBotEntity &robot_entity,
         Real in_range_distance)
     : m_cRobotEntity(robot_entity), m_fInRangeDistance(in_range_distance)

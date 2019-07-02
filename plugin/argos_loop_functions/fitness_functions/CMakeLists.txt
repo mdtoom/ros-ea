@@ -2,6 +2,7 @@ add_library(fitness_functions SHARED
         fitness_function.h fitness_function.cpp
         absolute_distance_fitness_function.h absolute_distance_fitness_function.cpp
         space_dependent_fitness_function.h space_dependent_fitness_function.cpp
+        summed_in_light_range_fitness_function.h summed_in_light_range_fitness_function.cpp
         )
 
 target_link_libraries(fitness_functions
