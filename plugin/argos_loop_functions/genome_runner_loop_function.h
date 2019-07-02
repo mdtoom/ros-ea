@@ -32,12 +32,17 @@ public:
 
     virtual void PostStep();
 
-private:
-    /** This variable stores the genomes that need to be evaluated on this controller. */
-    CGenomeBuffer *m_cGenomeBuffer;
+protected:
+
+    /** This function is called when an experiment is finished and should wrap up the iteration. */
+    virtual void finish_simulation_iteration();
 
     /** This publisher publishes the score messages of the robots that have been evaluated. */
     ros::Publisher m_pcScorePublisher;
+
+private:
+    /** This variable stores the genomes that need to be evaluated on this controller. */
+    CGenomeBuffer *m_cGenomeBuffer;
 
     int m_iExecutedSteps;
     int m_iTargetExecutedSteps;

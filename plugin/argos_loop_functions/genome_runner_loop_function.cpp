@@ -108,20 +108,25 @@ void CGenomeRunnerLoopFunction::PostStep()
 
     if (m_pcFootBot->GetEmbodiedEntity().IsCollidingWithSomething() || m_iExecutedSteps >= m_iTargetExecutedSteps)
     {   // If the execution is finished.
-        gather_controller_states();
-        CArgosRosBot &controller = (CArgosRosBot&) m_pcFootBot->GetControllableEntity().GetController();
-        CRobotController *current_controller = controller.get_controller();
-
-        // publish the score in the score topic.
-        ma_evolution::Score scoreMsg;
-        scoreMsg.key = current_controller->m_iID;
-        scoreMsg.gen_hash = current_controller->m_iGenerationID;
-        scoreMsg.score = m_pFitnessFunction->get_fitness();
-        m_pcScorePublisher.publish(scoreMsg);
-
-        controller.set_controller(nullptr);     // Set that no controller is currently on the robot.
-        delete current_controller;     // Delete the old controller
+        finish_simulation_iteration();
     }
+}
+
+void CGenomeRunnerLoopFunction::finish_simulation_iteration()
+{
+    gather_controller_states();
+    CArgosRosBot &controller = (CArgosRosBot&) m_pcFootBot->GetControllableEntity().GetController();
+    CRobotController *current_controller = controller.get_controller();
+
+    // publish the score in the score topic.
+    ma_evolution::Score scoreMsg;
+    scoreMsg.key = current_controller->m_iID;
+    scoreMsg.gen_hash = current_controller->m_iGenerationID;
+    scoreMsg.score = m_pFitnessFunction->get_fitness();
+    m_pcScorePublisher.publish(scoreMsg);
+
+    controller.set_controller(nullptr);     // Set that no controller is currently on the robot.
+    delete current_controller;     // Delete the old controller
 }
 
 /****************************************/

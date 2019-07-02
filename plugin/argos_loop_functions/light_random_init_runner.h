@@ -9,13 +9,26 @@
 
 class CLightRandomInitLoopFunction : public CGenomeRunnerLoopFunction {
 
+public:
+    CLightRandomInitLoopFunction();
+
+    ~CLightRandomInitLoopFunction() = default;
+
     virtual void Init(TConfigurationNode& t_node);
 
     virtual void Reset();
 
+    virtual void finish_simulation_iteration();
+
 private:
 
     CVector3 m_vLightPosition;
+
+    int m_iNumTrials;
+
+    int m_iMaxNumTrials;
+
+    Real m_fCurrentControllerScore;
 
 };
 
