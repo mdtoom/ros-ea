@@ -8,7 +8,7 @@
 #include <queue>
 #include "ros/ros.h"
 #include "message_decoder.h"
-#include "../argos_ros_bot/robot_controller.h"
+#include "../argos_ros_bot/controllers/robot_controller.h"
 
 /** This class stores genomes that are ready to be evaluated. */
 class CGenomeBuffer

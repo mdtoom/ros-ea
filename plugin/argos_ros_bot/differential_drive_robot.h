@@ -10,7 +10,7 @@
 #include <argos3/plugins/robots/generic/control_interface/ci_differential_steering_actuator.h>
 #include <vector>
 
-#include "robot_controller.h"
+#include "controllers/robot_controller.h"
 
 using namespace argos;
 

@@ -6,7 +6,7 @@
 #include <cassert>
 #include <iostream>
 #include <map>
-#include "../argos_ros_bot/neat_controller.h"
+#include "../argos_ros_bot/controllers/neat_controller.h"
 
 void neat_state_test()
 {

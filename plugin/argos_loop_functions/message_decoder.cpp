@@ -4,12 +4,12 @@
 
 #include "message_decoder.h"
 
-#include "../argos_ros_bot/robot_controller.h"
-#include "../argos_ros_bot/transition_state_machine.h"
-#include "../argos_ros_bot/selector_state_machine.h"
-#include "../argos_ros_bot/state_machine_controller.h"
-#include "../argos_ros_bot/fixed_two_state_controller.h"
-#include "../argos_ros_bot/neat_controller.h"
+#include "../argos_ros_bot/controllers/robot_controller.h"
+#include "../argos_ros_bot/controllers/transition_state_machine.h"
+#include "../argos_ros_bot/controllers/selector_state_machine.h"
+#include "../argos_ros_bot/controllers/state_machine_controller.h"
+#include "../argos_ros_bot/controllers/fixed_two_state_controller.h"
+#include "../argos_ros_bot/controllers/neat_controller.h"
 #include "ma_evolution/WeightVector.h"
 #include "ma_evolution/SMGenome.h"
 #include "ma_evolution/SMState.h"

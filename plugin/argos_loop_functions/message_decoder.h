@@ -5,7 +5,7 @@
 #ifndef MA_EVOLUTION_MESSAGE_DECODER_H
 #define MA_EVOLUTION_MESSAGE_DECODER_H
 
-#include "../argos_ros_bot/robot_controller.h"
+#include "../argos_ros_bot/controllers/robot_controller.h"
 #include "ma_evolution/SMGenome.h"
 #include "ma_evolution/SMSGenome.h"
 #include "ma_evolution/NEATGenome.h"

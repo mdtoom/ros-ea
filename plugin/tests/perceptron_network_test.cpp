@@ -5,7 +5,7 @@
 #include <cassert>
 #include <vector>
 #include "perceptron_network_test.h"
-#include "../argos_ros_bot/perceptron_network.h"
+#include "../argos_ros_bot/controllers/perceptron_network.h"
 
 void perceptron_network_test_1()
 {

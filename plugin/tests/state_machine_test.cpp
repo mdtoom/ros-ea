@@ -5,7 +5,7 @@
 #include <cassert>
 #include <vector>
 #include "state_machine_test.h"
-#include "../argos_ros_bot/transition_state_machine.h"
+#include "../argos_ros_bot/controllers/transition_state_machine.h"
 
 
 void state_machine_test_1_state()

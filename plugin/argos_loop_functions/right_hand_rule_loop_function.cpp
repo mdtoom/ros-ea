@@ -4,7 +4,7 @@
 
 #include "right_hand_rule_loop_function.h"
 #include "../argos_ros_bot/argos_ros_bot.h"
-#include "../argos_ros_bot/right_hand_controller.h"
+#include "../argos_ros_bot/controllers/right_hand_controller.h"
 
 void CRightHandRuleLoopFunction::Init(TConfigurationNode &t_node)
 {
