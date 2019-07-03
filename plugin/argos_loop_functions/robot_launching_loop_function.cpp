@@ -44,7 +44,9 @@ void CRobotLaunchingLoopFunction::Init(TConfigurationNode& t_node)
             advertiseService("states_request", &CRobotLaunchingLoopFunction::GetStateHistory, this);
 
     // Create the foot-bot and get a reference to its controller
-    m_pcFootBot = new CFootBotEntity("fb", "argos_ros_bot");
+    std::string controller = "argos_ros_bot";
+    GetNodeAttributeOrDefault(t_node, "argos_controller", controller, controller);
+    m_pcFootBot = new CFootBotEntity("fb", controller);
     AddEntity(*m_pcFootBot);
     CRobotLaunchingLoopFunction::Reset();
 
