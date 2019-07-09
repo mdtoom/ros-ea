@@ -4,7 +4,7 @@ import rospy
 import roslaunch
 from examples.experiment_functions import FFControllerFactory, SMControllerFactory
 from ma_evolution.msg import Score
-from ma_evolution.srv import Trajectory, StateRequest, SimScore
+from ma_evolution.srv import Trajectory, StateRequest, SimScore, AtLight
 from neat.state_machine_network import StateMachineNetwork
 from neat.state_selector_network import StateSelectorNetwork
 from std_srvs.srv import Empty
@@ -53,6 +53,11 @@ class SimulationCommunicator:
         rospy.wait_for_service(self.namespace + 'states_request')
         state_service = rospy.ServiceProxy(self.namespace + 'states_request', StateRequest)
         return state_service().StateSequence
+
+    def get_at_light(self):
+        rospy.wait_for_service(self.namespace + 'at_light')
+        at_light_service = rospy.ServiceProxy(self.namespace + 'at_light', AtLight)
+        return at_light_service().atLight
 
     def callback(self, data):
         # Put the retrieved score in a list and notify (trough the condition) that a new score has arrived.

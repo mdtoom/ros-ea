@@ -41,7 +41,7 @@ feed_forward            = True
 initial_connection      = full
 
 # transition add/remove rates
-transition_add_prob     = 0.2
+transition_add_prob     = 0.0
 transition_delete_prob  = 0.0
 
 # network parameters

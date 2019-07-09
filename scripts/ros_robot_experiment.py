@@ -36,6 +36,7 @@ class GenomeEvaluator:
         for sm in self.sim_controllers:
             sm.genome_publisher.unregister()
 
+
 class ROSRobotExperiment(SingleExperiment):
     """ This class evaluates the genomes by sending them to a ROS node, which evaluates them."""
 
@@ -51,7 +52,6 @@ class ROSRobotExperiment(SingleExperiment):
         # Initialise the variables needed to communicate with the others trough ROS.
         self.gen_hash = 0
         rospy.init_node('evolutionary_algorithm', anonymous=True)
-
 
     def send_genomes(self, genomes):
         """ This function resends the genomes, which have not yet replied. """

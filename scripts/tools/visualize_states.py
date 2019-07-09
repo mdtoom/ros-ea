@@ -31,6 +31,10 @@ class StateUsageVisualizer:
         plt.clf()
         fig, axs = plt.subplots(len_of_group, 1)
 
+        # In case only one controller is tested put axs in a list
+        if len_of_group == 1:
+            axs = [axs]
+
         fig.suptitle('State usages of {0} {1}'.format(self.selection_type, self.group_id))
 
         for i in range(len_of_group):

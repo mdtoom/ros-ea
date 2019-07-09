@@ -20,7 +20,6 @@ def sum_and_average(folders):
 
         for stat_file in stat_files:
             print(stat_file)
-            print(os    .path.isfile(stat_file) )
             with open(stat_file, 'rb') as handle:
                 stats = pickle.load(handle)
 
@@ -33,15 +32,19 @@ def sum_and_average(folders):
 
         print([len(x) for x in max_per_gen])
         max_per_gen = np.array(max_per_gen)
-        avg_max_per_gen = sum(max_per_gen)
-        avg_max_per_gen /= max_per_gen.shape[0]
+
+        if max_per_gen.shape[0] == 1:
+            avg_max_per_gen = max_per_gen
+        else:
+            avg_max_per_gen = sum(max_per_gen)
+            avg_max_per_gen /= max_per_gen.shape[0]
+
         avg_max_fitnesses.append(avg_max_per_gen)
 
     # Ensure that the all experiments are padded to the max number of generations.
     max_length = max(len(experiment) for experiment in avg_max_fitnesses)
     print(max_length)
 
-    print(experiment for experiment in avg_max_fitnesses)
     avg_max_fitnesses = [list(experiment) + [experiment[-1]] * (max_length - len(experiment)) for experiment in avg_max_fitnesses]
 
     max_score = max([max(gen) for gen in avg_max_fitnesses])

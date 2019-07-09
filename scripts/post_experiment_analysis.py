@@ -6,7 +6,7 @@ from time import sleep
 import rospy
 import csv
 
-from message_parsing import SMROSEncoder, NEATROSEncoder
+from message_parsing import SMROSEncoder, NEATROSEncoder, SMSROSEncoder
 from tools.visualize_states import StateUsageVisualizer
 from tools.score_saver import ScoreSaver
 from tools.scenario_visualizers import draw_trajectory
@@ -156,6 +156,9 @@ if __name__ == '__main__':
     elif my_argv[1] == 'state-machine':
         encoder = SMROSEncoder()
         print('Going for state-machine controller')
+    elif my_argv[1] == 'state-selector':
+        encoder = SMSROSEncoder()
+        print('Going for state-selector controller')
     else:
         print('Unknown controller class, exit.')
         exit(1)
