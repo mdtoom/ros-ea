@@ -71,6 +71,7 @@ add_service_files(
         SimScore.srv
         Trajectory.srv
         StateRequest.srv
+        AtLight.srv
 )
 
 ## Generate actions in the 'action' folder

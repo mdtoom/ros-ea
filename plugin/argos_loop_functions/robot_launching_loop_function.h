@@ -12,6 +12,7 @@
 #include "geometry_msgs/Point.h"
 #include "ma_evolution/Trajectory.h"
 #include "ma_evolution/StateRequest.h"
+#include "ma_evolution/AtLight.h"
 
 using namespace argos;
 
@@ -49,6 +50,10 @@ protected:
     virtual bool GetStateHistory(ma_evolution::StateRequest::Request& request,
                                  ma_evolution::StateRequest::Response& response);
 
+    /** This function returns the state history of the robot until reset. */
+    virtual bool GetAtLight(ma_evolution::AtLight::Request& request,
+                                 ma_evolution::AtLight::Response& response);
+
     /** This function sets the initial location of the robot. */
     virtual void SetStartLocation();
 
@@ -56,6 +61,8 @@ protected:
     ros::ServiceServer m_pcStateHistoryService;
     /** This returns the list of locations of the robot from the latest reset. */
     ros::ServiceServer m_pcTrajectoryService;
+    /** This returns whether the robot is within 0.5 meter of the light. */
+    ros::ServiceServer m_pcAtLightService;
 
     CRandom::CRNG* m_pcRNG;
 
@@ -64,12 +71,12 @@ protected:
     /** This function gathers the controller states from the robot. */
     void gather_controller_states();
 
+    SInitSetup m_vecResetLocation;
+
 private:
 
     std::vector<geometry_msgs::Point> m_vLocations;
     std::vector<int> m_vControllerStates;
-
-    SInitSetup m_vecResetLocation;
 };
 
 

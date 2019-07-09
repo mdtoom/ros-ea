@@ -4,6 +4,7 @@
 
 #include "robot_launching_loop_function.h"
 #include "../argos_ros_bot/argos_ros_bot.h"
+#include <argos3/core/simulator/entity/positional_entity.h>
 
 
 // Initialize ROS node.  There will be only one ROS node no matter how many robots are created in
@@ -43,10 +44,13 @@ void CRobotLaunchingLoopFunction::Init(TConfigurationNode& t_node)
     m_pcStateHistoryService = nodeHandle->
             advertiseService("states_request", &CRobotLaunchingLoopFunction::GetStateHistory, this);
 
+    m_pcAtLightService = nodeHandle->
+            advertiseService("at_light", &CRobotLaunchingLoopFunction::GetAtLight, this);
+
     // Create the foot-bot and get a reference to its controller
-    std::string controller = "argos_ros_bot";
-    GetNodeAttributeOrDefault(t_node, "argos_controller", controller, controller);
-    m_pcFootBot = new CFootBotEntity("fb", controller);
+    std::string controller_nm = "argos_ros_bot";
+    GetNodeAttributeOrDefault(t_node, "argos_controller", controller_nm, controller_nm);
+    m_pcFootBot = new CFootBotEntity("fb", controller_nm);
     AddEntity(*m_pcFootBot);
     CRobotLaunchingLoopFunction::Reset();
 
@@ -97,6 +101,21 @@ bool CRobotLaunchingLoopFunction::GetStateHistory(ma_evolution::StateRequest::Re
     }
 
     return true;
+}
+
+/****************************************/
+/****************************************/
+
+bool CRobotLaunchingLoopFunction::GetAtLight(ma_evolution::AtLight::Request &request,
+                                             ma_evolution::AtLight::Response &response)
+{
+    CPositionalEntity& light = (CPositionalEntity&) CSimulator::GetInstance().GetSpace().GetEntity("light");
+    CVector3 robotPosition = m_pcFootBot->GetEmbodiedEntity().GetOriginAnchor().Position;
+    CVector3 lightPosition = light.GetPosition();
+    lightPosition.SetZ(0.0);
+
+    // Return true if the robot is within half a meter of the light.
+    response.atLight = (robotPosition - lightPosition).Length() < 0.5;
 }
 
 /****************************************/

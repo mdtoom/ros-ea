@@ -1,6 +1,6 @@
 <launch>
 
-    <arg name="time_steps" default="50"/>
+    <arg name="time_steps" default="600"/>
     <arg name="num_inputs" default="24"/>
     <arg name="num_outputs" default="2"/>
     <arg name="controller" default="state-machine"/>
