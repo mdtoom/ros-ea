@@ -3,6 +3,7 @@ import struct
 
 import rospy
 from ma_evolution.msg import SimulationReport
+from neat.six_util import iteritems
 
 
 class StatesGatherer:
@@ -23,13 +24,20 @@ class StatesGatherer:
     def callback(self, data):
         assert len(data.state_sequence) == len(data.locations) or len(data.state_sequence) == 0
 
-        trajectory = []
-        for state, location in zip(data.state_sequence, data.locations):
-            trajectory.append(location.x)
-            trajectory.append(location.y)
-            trajectory.append(state)
+        state_dict = {}
 
-        self.received_state_sets.append([data.gen_hash, data.key, data.score, data.at_light] + trajectory)
+        for state in data.state_sequence:
+            if state not in state_dict:
+                state_dict[state] = 0
+
+            state_dict[state] += 1
+
+        state_usage = []
+        for key, value in iteritems(state_dict):
+            state_usage.append(key)
+            state_usage.append(value)
+
+        self.received_state_sets.append([data.gen_hash, data.key, data.score, data.at_light] + state_usage)
 
     def write_generation(self):
 
