@@ -5,6 +5,7 @@
 #ifndef MA_EVOLUTION_ROBOT_LAUNCHING_LOOP_FUNCTION_H
 #define MA_EVOLUTION_ROBOT_LAUNCHING_LOOP_FUNCTION_H
 
+#include <stdint.h>
 #include <ros/ros.h>
 #include <argos3/plugins/robots/foot-bot/simulator/footbot_entity.h>
 #include <argos3/core/simulator/loop_functions.h>
@@ -71,9 +72,10 @@ protected:
     /** This function gathers the controller states from the robot. */
     void gather_controller_states();
 
-    SInitSetup m_vecResetLocation;
+    /** This function returns true when the controller is at the light. */
+    bool at_light();
 
-private:
+    SInitSetup m_vecResetLocation;
 
     std::vector<geometry_msgs::Point> m_vLocations;
     std::vector<int> m_vControllerStates;

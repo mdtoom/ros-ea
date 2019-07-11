@@ -12,7 +12,7 @@ def nn_based_experiment(launch_file, config, base_directory, num_generations, nu
     sim_control.start_simulators()
     controller_keeper = None
     try:
-        controller_keeper = GenomeEvaluator(NEATROSEncoder(config.genome_config.num_outputs))
+        controller_keeper = GenomeEvaluator(NEATROSEncoder(config.genome_config.num_outputs), base_directory)
         experiment = experiment_class(config, num_generations, controller_keeper,
                                       base_directory=base_directory, cntrl_draw_func=draw_nn)
         experiment.run_full_experiment(num_runs)
@@ -30,7 +30,7 @@ def ss_based_experiment(launch_file, config, base_directory, num_generations, nu
     sim_control.start_simulators()
     controller_keeper = None
     try:
-        controller_keeper = GenomeEvaluator(SMSROSEncoder())
+        controller_keeper = GenomeEvaluator(SMSROSEncoder(), base_directory)
         experiment = experiment_class(config, num_generations, controller_keeper, base_directory=base_directory)
         experiment.run_full_experiment(num_runs)
 
@@ -47,7 +47,7 @@ def sm_based_experiment(launch_file, config, base_directory, num_generations, nu
     sim_control.start_simulators()
     controller_keeper = None
     try:
-        controller_keeper = GenomeEvaluator(SMROSEncoder())
+        controller_keeper = GenomeEvaluator(SMROSEncoder(), base_directory)
         experiment = experiment_class(config, num_generations, controller_keeper,
                                       base_directory=base_directory, cntrl_draw_func=draw_sm)
         experiment.run_full_experiment(num_runs)

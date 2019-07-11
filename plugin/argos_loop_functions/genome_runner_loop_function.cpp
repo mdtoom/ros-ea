@@ -5,7 +5,7 @@
 #include <ros/callback_queue.h>
 #include "message_decoder.h"
 #include "../argos_ros_bot/argos_ros_bot.h"
-#include "ma_evolution/Score.h"
+#include "ma_evolution/SimulationReport.h"
 
 /****************************************/
 /****************************************/
@@ -31,7 +31,7 @@ void CGenomeRunnerLoopFunction::Init(TConfigurationNode& t_node)
 {
     CFitnessEvaluatingLoopFunction::Init(t_node);
 
-    m_pcScorePublisher = nodeHandle->advertise<ma_evolution::Score>("score_topic", 100);
+    m_pcScorePublisher = nodeHandle->advertise<ma_evolution::SimulationReport>("simreport_topic", 100);
 
     // Get the user defined parameters.
     std::string controller_nm;
@@ -119,10 +119,13 @@ void CGenomeRunnerLoopFunction::finish_simulation_iteration()
     CRobotController *current_controller = controller.get_controller();
 
     // publish the score in the score topic.
-    ma_evolution::Score scoreMsg;
+    ma_evolution::SimulationReport scoreMsg;
     scoreMsg.key = current_controller->m_iID;
     scoreMsg.gen_hash = current_controller->m_iGenerationID;
     scoreMsg.score = m_pFitnessFunction->get_fitness();
+    scoreMsg.at_light = at_light();
+    scoreMsg.state_sequence = m_vControllerStates;
+    scoreMsg.locations = m_vLocations;
     m_pcScorePublisher.publish(scoreMsg);
 
     controller.set_controller(nullptr);     // Set that no controller is currently on the robot.

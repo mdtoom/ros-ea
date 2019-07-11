@@ -7,6 +7,8 @@ import rospy
 from examples.experiment_template import SingleExperiment
 
 from post_experiment_analysis import PostExperimentAnalysis
+from helper_functions import get_available_namespaces
+from state_gatherer import StatesGatherer
 from simulation_control import SimulationCommunicator
 from tools.score_saver import ScoreSaver
 
@@ -16,25 +18,30 @@ class GenomeEvaluator:
     (most likely because the condition)
     """
 
-    def __init__(self, genome_encoder):
+    def __init__(self, genome_encoder, base_dir):
 
         # Find the running simulation nodes
         self.condition_lock = Condition()
         self.genome_encoder = genome_encoder
-        search_string = 'score_topic'
-        score_topics = [topic[0] for topic in rospy.get_published_topics() if search_string in topic[0]]
-        name_spaces = [topic.replace(search_string, '') for topic in score_topics]
+        name_spaces = get_available_namespaces()
         self.sim_controllers = [SimulationCommunicator(ns, genome_encoder.get_message_type(), self.condition_lock)
-                           for ns in name_spaces]
-        time.sleep(1)       # Sleep is required for initialisation
+                                for ns in name_spaces]
+
+        self.state_gatherers = [StatesGatherer(ns, base_dir) for ns in name_spaces]
+        time.sleep(1)  # Sleep is required for initialisation
 
     def get_namespaces(self):
-        return [sm.namespace for sm in self.sim_controllers ]
+        return [sm.namespace for sm in self.sim_controllers]
 
     def finished(self):
 
         for sm in self.sim_controllers:
             sm.genome_publisher.unregister()
+
+    def post_generation(self):
+
+        for state_gatherer in self.state_gatherers:
+            state_gatherer.write_generation()
 
 
 class ROSRobotExperiment(SingleExperiment):
@@ -61,8 +68,7 @@ class ROSRobotExperiment(SingleExperiment):
 
             assert genome_id == genome.key  # Safety check, so both can be used as keys.
             if genome_id not in self.aggregate_scores():
-
-                #print('Sending genome {0} to simulation {1}'.format(genome_id, controller_count))
+                # print('Sending genome {0} to simulation {1}'.format(genome_id, controller_count))
                 ros_encoded_genome = self.genome_encoder.encode(genome, self.gen_hash)
                 self.controllers.sim_controllers[controller_count].publish_genome(ros_encoded_genome)
                 controller_count = (controller_count + 1) % len(self.controllers.sim_controllers)
@@ -92,8 +98,8 @@ class ROSRobotExperiment(SingleExperiment):
             self.controllers.condition_lock.wait(10.0)
 
         self.controllers.condition_lock.release()
-
         self.set_scores(genomes)
+        self.controllers.post_generation()
 
         end_time = time.time()
         time_diff = end_time - start_time
@@ -167,16 +173,14 @@ class ROSSimultaneRobotExperiment(ROSRobotExperiment):
 
                 assert genome_id == genome.key  # Safety check, so both can be used as keys.
                 if genome_id not in sc.retrieved_scores:
-
                     # print('Sending genome {0} to simulation {1}'.format(genome_id, controller_count))
                     ros_encoded_genome = self.genome_encoder.encode(genome, self.gen_hash)
                     sc.publish_genome(ros_encoded_genome)
 
     def set_scores(self, genomes):
         # Set the scores to the genomes.
-        score_dict = {}     # Used for storing the scores.
+        score_dict = {}  # Used for storing the scores.
         for genome_id, genome in genomes:
-
             scores = [sc.retrieved_scores[genome_id] for sc in self.controllers.sim_controllers]
             assert len(scores) == len(self.controllers.sim_controllers)
             final_score = sum(scores) / len(scores)

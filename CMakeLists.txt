@@ -56,7 +56,7 @@ add_message_files(
         NConnection.msg
         NNode.msg
         NEATGenome.msg
-        Score.msg
+        SimulationReport.msg
         SMGenome.msg
         SMSGenome.msg
         SMState.msg

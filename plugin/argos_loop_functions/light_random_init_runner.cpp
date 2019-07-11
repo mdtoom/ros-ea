@@ -7,7 +7,7 @@
 #include <argos3/core/utility/math/range.h>
 #include <argos3/plugins/simulator/entities/light_entity.h>
 #include "../argos_ros_bot/argos_ros_bot.h"
-#include "ma_evolution/Score.h"
+#include "ma_evolution/SimulationReport.h"
 
 CLightRandomInitLoopFunction::CLightRandomInitLoopFunction()
     : m_iMaxNumTrials(5), m_iNumTrials(0), m_fCurrentControllerScore(0.0)
@@ -57,7 +57,7 @@ void CLightRandomInitLoopFunction::finish_simulation_iteration()
         Real score = m_fCurrentControllerScore / m_iNumTrials;
 
         // publish the score in the score topic.
-        ma_evolution::Score scoreMsg;
+        ma_evolution::SimulationReport scoreMsg;
         scoreMsg.key = current_controller->m_iID;
         scoreMsg.gen_hash = current_controller->m_iGenerationID;
         scoreMsg.score = score;

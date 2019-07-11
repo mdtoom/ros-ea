@@ -3,7 +3,7 @@ from time import sleep
 import rospy
 import roslaunch
 from examples.experiment_functions import FFControllerFactory, SMControllerFactory
-from ma_evolution.msg import Score
+from ma_evolution.msg import SimulationReport
 from ma_evolution.srv import Trajectory, StateRequest, SimScore, AtLight
 from neat.state_machine_network import StateMachineNetwork
 from neat.state_selector_network import StateSelectorNetwork
@@ -28,7 +28,7 @@ class SimulationCommunicator:
         self.genome_publisher = rospy.Publisher(self.namespace + 'genome_topic', message_type, queue_size=100)
         self.retrieved_scores = {}
         self.gen_hash = 0
-        rospy.Subscriber(self.namespace + 'score_topic', Score, self.callback)
+        rospy.Subscriber(self.namespace + 'simreport_topic', SimulationReport, self.callback)
 
     def reset(self):
         self.gen_hash = 0

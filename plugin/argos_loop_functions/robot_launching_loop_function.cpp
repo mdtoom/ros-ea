@@ -109,13 +109,8 @@ bool CRobotLaunchingLoopFunction::GetStateHistory(ma_evolution::StateRequest::Re
 bool CRobotLaunchingLoopFunction::GetAtLight(ma_evolution::AtLight::Request &request,
                                              ma_evolution::AtLight::Response &response)
 {
-    CPositionalEntity& light = (CPositionalEntity&) CSimulator::GetInstance().GetSpace().GetEntity("light");
-    CVector3 robotPosition = m_pcFootBot->GetEmbodiedEntity().GetOriginAnchor().Position;
-    CVector3 lightPosition = light.GetPosition();
-    lightPosition.SetZ(0.0);
-
-    // Return true if the robot is within half a meter of the light.
-    response.atLight = (robotPosition - lightPosition).Length() < 0.5;
+    response.atLight = at_light();
+    return true;
 }
 
 /****************************************/
@@ -166,4 +161,15 @@ void CRobotLaunchingLoopFunction::gather_controller_states()
     {
         m_vControllerStates.push_back(*it);
     }
+}
+
+bool CRobotLaunchingLoopFunction::at_light()
+{
+    CPositionalEntity& light = (CPositionalEntity&) CSimulator::GetInstance().GetSpace().GetEntity("light");
+    CVector3 robotPosition = m_pcFootBot->GetEmbodiedEntity().GetOriginAnchor().Position;
+    CVector3 lightPosition = light.GetPosition();
+    lightPosition.SetZ(0.0);
+
+    // Return true if the robot is within half a meter of the light.
+    return (robotPosition - lightPosition).Length() < 0.5;
 }

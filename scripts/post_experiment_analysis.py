@@ -7,6 +7,7 @@ import rospy
 import csv
 
 from message_parsing import SMROSEncoder, NEATROSEncoder, SMSROSEncoder
+from helper_functions import get_available_namespaces
 from tools.visualize_states import StateUsageVisualizer
 from tools.score_saver import ScoreSaver
 from tools.scenario_visualizers import draw_trajectory
@@ -167,10 +168,7 @@ if __name__ == '__main__':
     rospy.init_node('run_genome_from_file', anonymous=True)
     condition_lock = Condition()
 
-    # Find all the topic scores.
-    search_string = 'score_topic'
-    score_topics = [topic[0] for topic in rospy.get_published_topics() if search_string in topic[0]]
-    name_spaces = [topic.replace(search_string, '') for topic in score_topics]
+    name_spaces = get_available_namespaces()
     sim_controllers = [SimulationCommunicator(ns, encoder.get_message_type(), condition_lock)
                        for ns in name_spaces]
     sleep(1)  # Sleep is required for initialisation
