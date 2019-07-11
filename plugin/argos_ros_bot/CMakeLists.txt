@@ -12,7 +12,6 @@ target_link_libraries(differential_drive_robot
         /opt/ros/$ENV{ROS_DISTRO}/lib/libroscpp.so)
 
 add_library(argos_ros_bot SHARED
-        puck_seeing_ros_bot.cpp puck_seeing_ros_bot.h
         argos_ros_bot.h argos_ros_bot.cpp)
 
 target_link_libraries(argos_ros_bot
