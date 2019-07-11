@@ -36,7 +36,5 @@ class StatesGatherer:
         with open(self.states_file, 'a') as csv_file:
             writer = csv.writer(csv_file)
 
-            print(self.received_state_sets[0])
-
             for states in self.received_state_sets:
                 writer.writerow(states)
