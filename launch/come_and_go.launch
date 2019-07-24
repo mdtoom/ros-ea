@@ -14,4 +14,20 @@
               args="$(arg exp_folder)/argos_worlds/come_and_go.argos" />
     </group>
 
+    <group ns="sim2">
+        <node pkg="ma_evolution" type="argos_launcher.py" name="argos_launcher" output="screen"
+              args="$(arg exp_folder)/argos_worlds/come_and_go.argos" />
+    </group>
+
+    <group ns="sim3">
+        <node pkg="ma_evolution" type="argos_launcher.py" name="argos_launcher" output="screen"
+              args="$(arg exp_folder)/argos_worlds/come_and_go.argos" />
+    </group>
+
+    <group ns="sim4">
+        <node pkg="ma_evolution" type="argos_launcher.py" name="argos_launcher" output="screen"
+              args="$(arg exp_folder)/argos_worlds/come_and_go.argos" />
+    </group>
+
+
 </launch>

@@ -10,6 +10,9 @@
 class CComeAndGoLoopFunction : public CGenomeRunnerLoopFunction
 {
     virtual void Init(TConfigurationNode& t_node) override;
+
+    virtual void Reset() override;
+
 };
 
 

@@ -42,7 +42,7 @@
     <!-- *********************** -->
     <!-- * Arena configuration * -->
     <!-- *********************** -->
-    <arena size="9, 6, 2" center="2.5,2.5,1">
+    <arena size="20, 10, 2" center="-3.5,2.5,1">
 
         <!--
             Here we just put the static elements of the environment (the walls
@@ -51,22 +51,17 @@
             loop functions at the beginning of each experimental run.
         -->
 
-        <box id="wall_north" size="8,0.1,0.1" movable="false">
-            <body position="2.5,5,0" orientation="0,0,0" />
+        <box id="wall_north" size="19,0.1,0.1" movable="false">
+            <body position="-3.5,7.0,0" orientation="0,0,0" />
         </box>
 
-        <box id="wall_south" size="8,0.1,0.1" movable="false">
-            <body position="2.5,0,0" orientation="0,0,0" />
+        <box id="wall_south" size="19,0.1,0.1" movable="false">
+            <body position="-3.5,-2.0,0" orientation="0,0,0" />
         </box>
 
-        <box id="wall_east" size="0.1,5,0.1" movable="false">
-            <body position="-1.5,2.5,0" orientation="0,0,0" />
+        <box id="wall_east" size="0.1,9,0.1" movable="false">
+            <body position="-13,2.5,0" orientation="0,0,0" />
         </box>
-
-        <box id="wall_west" size="0.1,5,0.1" movable="false">
-            <body position="6.5,2.5,0" orientation="0,0,0" />
-        </box>
-
 
         <box id="front_obs" size="0.2,2.2,0.1" movable="false">
             <body position="6.0,2.5,0" orientation="0,0,0" />
@@ -80,12 +75,12 @@
             <body position="5.25,3.5,0" orientation="0,0,0" />
         </box>
 
-        <box id="left_side_obs" size="0.2,2.2,0.1" movable="false">
-            <body position="4.5,0.5,0" orientation="0,0,0" />
+        <box id="left_side_obs" size="0.2,4.2,0.1" movable="false">
+            <body position="4.5,-0.5,0" orientation="0,0,0" />
         </box>
 
-        <box id="right_side_obs" size="0.2,2.2,0.1" movable="false">
-            <body position="4.5,4.5,0" orientation="0,0,0" />
+        <box id="right_side_obs" size="0.2,4.2,0.1" movable="false">
+            <body position="4.5,5.5,0" orientation="0,0,0" />
         </box>
 
         <light id="light"
@@ -114,12 +109,12 @@
     <!-- ****************** -->
     <!-- * Visualization * -->
     <!-- ****************** -->
-<!--    <visualization>-->
-<!--        <qt-opengl>-->
-<!--            <camera>-->
-<!--                <placement idx="0" position="2.5,2.5,6" look_at="2.5,2.5,0" lens_focal_length="20" />-->
-<!--            </camera>-->
-<!--        </qt-opengl>-->
-<!--    </visualization>-->
+    <visualization>
+        <qt-opengl>
+            <camera>
+                <placement idx="0" position="2.5,2.5,6" look_at="2.5,2.5,0" lens_focal_length="20" />
+            </camera>
+        </qt-opengl>
+    </visualization>
 
 </argos-configuration>
