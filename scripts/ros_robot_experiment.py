@@ -18,7 +18,7 @@ class GenomeEvaluator:
     (most likely because the condition)
     """
 
-    def __init__(self, genome_encoder, base_dir):
+    def __init__(self, genome_encoder, base_dir, gather_states=False):
 
         # Find the running simulation nodes
         self.condition_lock = Condition()
@@ -27,7 +27,11 @@ class GenomeEvaluator:
         self.sim_controllers = [SimulationCommunicator(ns, genome_encoder.get_message_type(), self.condition_lock)
                                 for ns in name_spaces]
 
-        self.state_gatherers = [StatesGatherer(ns, base_dir) for ns in name_spaces]
+        if gather_states: # Enable objects that gather the states if required.
+            self.state_gatherers = [StatesGatherer(ns, base_dir) for ns in name_spaces]
+        else:
+            self.state_gatherers = []
+
         time.sleep(1)  # Sleep is required for initialisation
 
     def get_namespaces(self):
