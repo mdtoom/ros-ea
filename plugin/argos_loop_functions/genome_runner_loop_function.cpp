@@ -118,18 +118,24 @@ void CGenomeRunnerLoopFunction::finish_simulation_iteration()
     CArgosRosBot &controller = (CArgosRosBot&) m_pcFootBot->GetControllableEntity().GetController();
     CRobotController *current_controller = controller.get_controller();
 
+    send_score_message(m_pFitnessFunction->get_fitness(), current_controller);
+
+    controller.set_controller(nullptr);     // Set that no controller is currently on the robot.
+    delete current_controller;     // Delete the old controller
+}
+
+void CGenomeRunnerLoopFunction::send_score_message(Real score, CRobotController *controller)
+{
     // publish the score in the score topic.
     ma_evolution::SimulationReport scoreMsg;
-    scoreMsg.key = current_controller->m_iID;
-    scoreMsg.gen_hash = current_controller->m_iGenerationID;
-    scoreMsg.score = m_pFitnessFunction->get_fitness();
+    scoreMsg.header.key = controller->m_sHeader.identifier;
+    scoreMsg.header.gen_hash = controller->m_sHeader.gen_hash;
+    scoreMsg.header.generation = controller->m_sHeader.generation;
+    scoreMsg.score = score;
     scoreMsg.at_light = at_light();
     scoreMsg.state_sequence = m_vControllerStates;
     scoreMsg.locations = m_vLocations;
     m_pcScorePublisher.publish(scoreMsg);
-
-    controller.set_controller(nullptr);     // Set that no controller is currently on the robot.
-    delete current_controller;     // Delete the old controller
 }
 
 /****************************************/

@@ -37,7 +37,7 @@ class StatesGatherer:
             state_usage.append(key)
             state_usage.append(value)
 
-        self.received_state_sets.append([data.gen_hash, data.key, data.score, data.at_light] + state_usage)
+        self.received_state_sets.append([data.header.generation, data.header.key, data.score, data.at_light] + state_usage)
 
     def write_generation(self):
 

@@ -24,7 +24,7 @@ public:
     Real get_fitness();
 
     /** Reset the fitness calculation. */
-    void reset();
+    virtual void reset();
 
 protected:
 

@@ -46,9 +46,9 @@ bool CNeatNode::evaluate(std::map<int, Real> &evaluated_nodes) {
     return true;
 }
 
-CNeatNetwork::CNeatNetwork(int id, int gen_id, int num_outputs, std::vector<CNeatConnection> connections,
+CNeatNetwork::CNeatNetwork(const ControllerHeader header, int num_outputs, std::vector<CNeatConnection> connections,
         std::vector<CNeatNode> nodes)
-        : CRobotController(id, gen_id), m_iNumOutputs(num_outputs)
+        : CRobotController(header), m_iNumOutputs(num_outputs)
 {
     // Set all the nodes.
     for (std::vector<CNeatNode>::iterator it = nodes.begin(); it != nodes.end(); ++it)

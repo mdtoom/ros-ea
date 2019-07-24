@@ -34,6 +34,8 @@ public:
 
 protected:
 
+    void send_score_message(Real score, CRobotController *controller);
+
     /** This function is called when an experiment is finished and should wrap up the iteration. */
     virtual void finish_simulation_iteration();
 

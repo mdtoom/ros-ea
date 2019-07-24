@@ -7,15 +7,23 @@
 
 #include <vector>
 #include <argos3/core/utility/datatypes/datatypes.h>
+#include "ma_evolution/GenomeHeader.h"
 
 using namespace argos;
+
+struct ControllerHeader {
+    int identifier;
+    int gen_hash;
+    int generation;
+};
+
 
 class CRobotController {
     /** This abstract class should be implemented to map the sensor inputs to actuator outputs. */
 
 public:
 
-    CRobotController(int id, int gen_id) : m_iID(id), m_iGenerationID(gen_id) { }
+    CRobotController(const ControllerHeader header) : m_sHeader(header) { }
 
     /** This function should execute the controller. */
     virtual std::vector<Real> activate(std::vector<Real> input) = 0;
@@ -23,9 +31,7 @@ public:
     /** This vector can be used to store the states of the robot. */
     std::vector<int> m_vStateHistory;
 
-    int m_iID;
-    int m_iGenerationID;
-
+    const ControllerHeader m_sHeader;
 };
 
 

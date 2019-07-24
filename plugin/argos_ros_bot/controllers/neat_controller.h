@@ -58,7 +58,7 @@ class CNeatNetwork : public CRobotController {
 
 public:
 
-    CNeatNetwork(int id, int gen_id, int num_outputs,
+    CNeatNetwork(const ControllerHeader header, int num_outputs,
             std::vector<CNeatConnection> connections, std::vector<CNeatNode> nodes);
 
     ~CNeatNetwork();

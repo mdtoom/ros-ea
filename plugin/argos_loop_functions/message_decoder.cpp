@@ -52,7 +52,7 @@ CRobotController *decode_genome(const ma_evolution::SMGenome& msg)
         states.emplace_back(new_state);
     }
 
-    CStateMachineController *new_controller = new CStateMachineController(msg.key, msg.gen_hash, states);
+    CStateMachineController *new_controller = new CStateMachineController(decode_header(msg.header), states);
 
     // Add the transitions to the states.
     for (std::vector<ma_evolution::SMTransition>::const_iterator it = msg.transitions.begin();
@@ -90,7 +90,7 @@ CRobotController *decode_genome(const ma_evolution::NEATGenome& msg)
         connections.emplace_back(CNeatConnection(enc_conn.source, enc_conn.dest, enc_conn.enabled, enc_conn.weight));
     }
 
-    return new CNeatNetwork(msg.key, msg.gen_hash, msg.num_outputs, connections, nodes);
+    return new CNeatNetwork(decode_header(msg.header), msg.num_outputs, connections, nodes);
 }
 
 CRobotController *decode_genome(const ma_evolution::SMSGenome& msg)
@@ -124,7 +124,7 @@ CRobotController *decode_genome(const ma_evolution::SMSGenome& msg)
         }
     }
 
-    CStateMachineController *new_controller = new CStateMachineController(msg.key, msg.gen_hash, states);
+    CStateMachineController *new_controller = new CStateMachineController(decode_header(msg.header), states);
     return new_controller;
 }
 
@@ -143,5 +143,13 @@ CRobotController *decode_fixed_2_states(const ma_evolution::SMGenome& msg)
     CTransitionedState state2(msg.states[1].key, pn1);
 
     // Create the new controller
-    return new CFixedTwoStateController(msg.key, msg.gen_hash, state1, state2);
+    return new CFixedTwoStateController(decode_header(msg.header), state1, state2);
 }
+
+
+ControllerHeader decode_header(const ma_evolution::GenomeHeader& msg_header)
+{
+    ControllerHeader header{msg_header.key, msg_header.gen_hash, msg_header.generation};
+    return header;
+}
+

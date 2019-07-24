@@ -14,8 +14,9 @@ std::vector<Real> CControllerState::activate(const std::vector<Real> inputs)
     return m_cPerceptronNetwork.activate(inputs);
 }
 
-CStateMachineController::CStateMachineController(int controller_id, int gen_id, std::vector<CControllerState*> states) :
-    CRobotController(controller_id, gen_id), m_iCurrentState(states[0]->m_iStateId), m_vStates(states)
+CStateMachineController::CStateMachineController(const ControllerHeader header,
+        std::vector<CControllerState*> states)
+    : CRobotController(header), m_iCurrentState(states[0]->m_iStateId), m_vStates(states)
 { }
 
 CStateMachineController::~CStateMachineController()

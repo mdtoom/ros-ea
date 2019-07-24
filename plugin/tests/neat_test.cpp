@@ -8,6 +8,8 @@
 #include <map>
 #include "../argos_ros_bot/controllers/neat_controller.h"
 
+const ControllerHeader header{0, 0, 0};
+
 void neat_state_test()
 {
     std::string actfunc = "tanh";
@@ -65,7 +67,7 @@ void neat_node_sequence_test()
         CNeatConnection(-1, 10, true, 1.0),
         CNeatConnection(10, 0, true, -0.5)
     };
-    CNeatNetwork nn(1, 1, 1, connections, nodes);
+    CNeatNetwork nn(header, 1, connections, nodes);
     std::vector<Real> outputs = nn.activate({1.0});
     assert(outputs.size() == 1);
     assert(outputs[0] > 0.55 && outputs[0] < 0.56);
@@ -85,7 +87,7 @@ void multiple_output_nodes_test()
             CNeatConnection(-2, 0, true, -1.0),
             CNeatConnection(-2, 1, true, 0.5)
     };
-    CNeatNetwork nn(1, 1, 2, connections, nodes);
+    CNeatNetwork nn(header, 2, connections, nodes);
     std::vector<Real> outputs = nn.activate({1.0, 0.5});
     assert(outputs.size() == 2);
     assert(outputs[0] > 0.9 && outputs[0] < 0.91);
@@ -106,7 +108,7 @@ void filter_disabled_connection_test()
             CNeatConnection(-2, 0, true, -1.0),
             CNeatConnection(-2, 1, true, 0.5)
     };
-    CNeatNetwork nn(1, 1, 2, connections, nodes);
+    CNeatNetwork nn(header, 2, connections, nodes);
     std::vector<Real> outputs = nn.activate({1.0, 0.5});
 
     assert(outputs[0] > 0.46 && outputs[0] < 0.47);
@@ -131,7 +133,7 @@ void additional_connection_test()
             CNeatConnection(3, 1, true, 0.5),
             CNeatConnection(2, 0, true, 0.5)
     };
-    CNeatNetwork nn(1, 1, 2, connections, nodes);
+    CNeatNetwork nn(header, 2, connections, nodes);
     std::vector<Real> outputs = nn.activate({1.0, 0.5});
 
     assert(outputs[0] > 0.24 && outputs[0] < 0.26);

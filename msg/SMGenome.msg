@@ -1,4 +1,3 @@
-int32 key
-int32 gen_hash
+GenomeHeader header
 SMTransition[] transitions
 SMState[] states

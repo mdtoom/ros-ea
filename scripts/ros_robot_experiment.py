@@ -69,8 +69,7 @@ class ROSRobotExperiment(SingleExperiment):
             assert genome_id == genome.key  # Safety check, so both can be used as keys.
             if genome_id not in self.aggregate_scores():
                 # print('Sending genome {0} to simulation {1}'.format(genome_id, controller_count))
-                ros_encoded_genome = self.genome_encoder.encode(genome, self.gen_hash)
-                self.controllers.sim_controllers[controller_count].publish_genome(ros_encoded_genome)
+                self.publish_genome(genome, self.controllers.sim_controllers[controller_count])
                 controller_count = (controller_count + 1) % len(self.controllers.sim_controllers)
 
     def eval_genomes(self, genomes, config):
@@ -146,6 +145,11 @@ class ROSRobotExperiment(SingleExperiment):
         stc = PostExperimentAnalysis(self.controllers.sim_controllers, self.base_directory, self.genome_encoder)
         stc.analyse()
 
+    def publish_genome(self, genome, sim_controller):
+        """ This function publishes the given genome to the given simulation controllers topic."""
+        ros_encoded_genome = self.genome_encoder.encode(genome, self.p.generation, self.gen_hash)
+        sim_controller.publish_genome(ros_encoded_genome)
+
 
 class ROSSimultaneRobotExperiment(ROSRobotExperiment):
 
@@ -174,8 +178,7 @@ class ROSSimultaneRobotExperiment(ROSRobotExperiment):
                 assert genome_id == genome.key  # Safety check, so both can be used as keys.
                 if genome_id not in sc.retrieved_scores:
                     # print('Sending genome {0} to simulation {1}'.format(genome_id, controller_count))
-                    ros_encoded_genome = self.genome_encoder.encode(genome, self.gen_hash)
-                    sc.publish_genome(ros_encoded_genome)
+                    self.publish_genome(genome, sc)
 
     def set_scores(self, genomes):
         # Set the scores to the genomes.

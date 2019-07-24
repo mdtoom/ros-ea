@@ -1,7 +1,7 @@
 import numpy as np
 
 from ma_evolution.msg import NEATGenome, NNode, NConnection, SMGenome, SMState, SMTransition, SMCondition,\
-    WeightVector, SMSGenome
+    WeightVector, SMSGenome, GenomeHeader
 from neat import DefaultGenome
 from neat.genes import DefaultConnectionGene, DefaultNodeGene
 from neat.six_util import iteritems
@@ -14,7 +14,7 @@ from neat.state_selector_genome import StateSelectorGenome
 class ROSEncoder:
     """ This class provides the interface for a ROS encoder and can be used to encode/decode a genome"""
 
-    def encode(self, genome, generation):
+    def encode(self, genome, generation, gen_hash=0):
         """ This function should encode a genome. """
         pass
 
@@ -33,8 +33,7 @@ class NEATROSEncoder(ROSEncoder):
     def __init__(self, num_outputs):
         self.num_outputs = num_outputs
 
-
-    def encode(self, genome, generation):
+    def encode(self, genome, generation, gen_hash=0):
         """ This function encodes a NEAT genome in a NEATGenome ROS message. """
 
         encoded_nodes = []
@@ -47,7 +46,8 @@ class NEATROSEncoder(ROSEncoder):
             encoded_connection = NConnection(con_id[0], con_id[1], connection.weight, connection.enabled)
             encoded_connections.append(encoded_connection)
 
-        encoded_genome = NEATGenome(genome.key, generation, self.num_outputs, encoded_connections, encoded_nodes)
+        encoded_genome = NEATGenome(GenomeHeader(genome.key, gen_hash, generation), self.num_outputs,
+                                    encoded_connections, encoded_nodes)
         return encoded_genome
 
     def decode(self, encoded_genome):
@@ -68,7 +68,7 @@ class NEATROSEncoder(ROSEncoder):
             connections[key].weight = enc_connection.weight
             connections[key].enabled = enc_connection.enabled
 
-        genome = DefaultGenome(encoded_genome.key)
+        genome = DefaultGenome(encoded_genome.header.key)
         genome.connections = connections
         genome.nodes = nodes
 
@@ -115,7 +115,7 @@ class SMROSEncoder(ROSEncoder):
 
         return states
 
-    def encode(self, genome, generation):
+    def encode(self, genome, generation, gen_hash=0):
         """ This function encodes a State Machine genome to be send over ROS. """
         encoded_states = SMROSEncoder.encode_states(genome.states)
 
@@ -132,7 +132,7 @@ class SMROSEncoder(ROSEncoder):
                                               transition.enabled, or_comparison, enc_conditions)
             encoded_transitions.append(encoded_transition)
 
-        encoded_genome = SMGenome(genome.key, generation, encoded_transitions, encoded_states)
+        encoded_genome = SMGenome(GenomeHeader(genome.key, gen_hash, generation), encoded_transitions, encoded_states)
         return encoded_genome
 
     def decode(self, encoded_genome):
@@ -149,7 +149,7 @@ class SMROSEncoder(ROSEncoder):
                                             enc_condition.comparator_value)
                                            for enc_condition in enc_transition.conditions]
 
-        genome = StateMachineGenome(encoded_genome.key)
+        genome = StateMachineGenome(encoded_genome.header.key)
         genome.transitions = transitions
         genome.states = states
 
@@ -163,16 +163,16 @@ class SMROSEncoder(ROSEncoder):
 class SMSROSEncoder(ROSEncoder):
     """ This class provides an encoder and decoder for the state selector genome. """
 
-    def encode(self, genome, generation):
+    def encode(self, genome, generation, gen_hash=0):
         """ This function should encode a genome. """
         encoded_states = SMROSEncoder.encode_states(genome.states)
         encoded_selectors = SMROSEncoder.encode_states(genome.selectors)
-        encoded_genome = SMSGenome(genome.key, generation, encoded_states, encoded_selectors)
+        encoded_genome = SMSGenome(GenomeHeader(genome.key, gen_hash, generation), encoded_states, encoded_selectors)
         return encoded_genome
 
     def decode(self, encoded_genome):
         """ This function should decode a genome. """
-        genome = StateSelectorGenome(encoded_genome.key)
+        genome = StateSelectorGenome(encoded_genome.header.key)
         genome.states = SMROSEncoder.decode_states(encoded_genome.states)
         genome.selectors = SMROSEncoder.decode_states(encoded_genome.selectors)
         return genome

@@ -10,6 +10,8 @@
 
 void state_machine_test_1_state()
 {
+    const ControllerHeader header{0, 0, 0};
+
     std::vector<Real> weight_1{1.0};
     std::vector<Real> weight_2{-0.5};
     std::vector<std::vector<Real>> weights{weight_1, weight_2};
@@ -28,7 +30,7 @@ void state_machine_test_1_state()
     assert(results[1] > 0.76 && results[1] < 0.77);
 
     std::vector<CControllerState*> states{tsp};
-    CStateMachineController smc(1, 1, states);
+    CStateMachineController smc(header, states);
     results = smc.activate(inputs);
 
     assert(results.size() == 2);

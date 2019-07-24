@@ -56,12 +56,7 @@ void CLightRandomInitLoopFunction::finish_simulation_iteration()
         // Calculate the average score.
         Real score = m_fCurrentControllerScore / m_iNumTrials;
 
-        // publish the score in the score topic.
-        ma_evolution::SimulationReport scoreMsg;
-        scoreMsg.key = current_controller->m_iID;
-        scoreMsg.gen_hash = current_controller->m_iGenerationID;
-        scoreMsg.score = score;
-        m_pcScorePublisher.publish(scoreMsg);
+        send_score_message(score, current_controller);
 
         controller.set_controller(nullptr);     // Set that no controller is currently on the robot.
         delete current_controller;     // Delete the old controller

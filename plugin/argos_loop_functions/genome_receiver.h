@@ -65,14 +65,14 @@ protected:
      */
     void receive_genome(const T& msg)
     {
-        if (msg.gen_hash != m_iCurrentGenHash)
+        if (msg.header.gen_hash != m_iCurrentGenHash)
         {
             // Clearing the queue
             while (!m_qControllerQueue.empty())
             {
                 m_qControllerQueue.pop();
             }
-            m_iCurrentGenHash = msg.gen_hash;
+            m_iCurrentGenHash = msg.header.gen_hash;
             LOG << "Different gen hash received, clearing queue" << std::endl;
         }
 

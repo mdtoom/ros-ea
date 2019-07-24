@@ -27,15 +27,15 @@ class SimulationCommunicator:
         self.condition_lock = condition_lock
         self.genome_publisher = rospy.Publisher(self.namespace + 'genome_topic', message_type, queue_size=100)
         self.retrieved_scores = {}
-        self.gen_hash = 0
+        self.expected_gen_hash = 0
         rospy.Subscriber(self.namespace + 'simreport_topic', SimulationReport, self.callback)
 
     def reset(self):
-        self.gen_hash = 0
+        self.expected_gen_hash = 0
         self.retrieved_scores = {}
 
     def publish_genome(self, enc_genome):
-        self.gen_hash = enc_genome.gen_hash
+        self.expected_gen_hash = enc_genome.header.gen_hash
         self.genome_publisher.publish(enc_genome)
 
     def get_score(self):
@@ -61,10 +61,8 @@ class SimulationCommunicator:
 
     def callback(self, data):
         # Put the retrieved score in a list and notify (trough the condition) that a new score has arrived.
-        # print('retrieved score {0} of gen {1}'.format(data.key, data.gen_hash))
-
-        if self.gen_hash == data.gen_hash:  # Ignore messages from a different generation.
-            self.retrieved_scores[data.key] = data.score
+        if self.expected_gen_hash == data.header.gen_hash:  # Ignore messages from a different generation.
+            self.retrieved_scores[data.header.key] = data.score
             self.condition_lock.acquire(True)
             self.condition_lock.notify()
             self.condition_lock.release()

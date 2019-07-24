@@ -6,7 +6,7 @@
 #include "perceptron_network.h"
 
 CRightHandBot::CRightHandBot()
-    : CRobotController(0, 0), m_iState(0)
+    : CRobotController(ControllerHeader()), m_iState(0)
 {}
 
 std::vector<Real> CRightHandBot::activate(std::vector<Real> inputs)

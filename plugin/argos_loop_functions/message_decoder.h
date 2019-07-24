@@ -38,5 +38,11 @@ CRobotController *decode_genome(const ma_evolution::SMSGenome& msg);
  */
 CRobotController *decode_fixed_2_states(const ma_evolution::SMGenome& msg);
 
+/**
+ * This function decodes a header into a controller header for easier transfer.
+ * @param msg_header    - Header of the controller message send.
+ * @return              - Translated header message.
+ */
+ControllerHeader decode_header(const ma_evolution::GenomeHeader& msg_header);
 
 #endif //MA_EVOLUTION_MESSAGE_DECODER_H

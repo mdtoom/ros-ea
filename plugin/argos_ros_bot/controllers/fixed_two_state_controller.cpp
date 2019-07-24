@@ -6,8 +6,9 @@
 
 #define IN_RANGE_DISTANCE 0.7
 
-CFixedTwoStateController::CFixedTwoStateController(int controller_id, int gen_id, const CTransitionedState &state1,
-        const CTransitionedState &state2) : CRobotController(controller_id, gen_id), m_cState1(state1), m_cState2(state2)
+CFixedTwoStateController::CFixedTwoStateController(const ControllerHeader header,
+        const CTransitionedState &state1, const CTransitionedState &state2)
+    : CRobotController(header), m_cState1(state1), m_cState2(state2)
 { }
 
 std::vector<Real> CFixedTwoStateController::activate(const std::vector<Real> inputs)

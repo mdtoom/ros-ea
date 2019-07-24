@@ -15,7 +15,7 @@ class CFixedTwoStateController : public CRobotController {
      */
 
 public:
-    CFixedTwoStateController(int controller_id, int gen_id, const CTransitionedState &state1,
+    CFixedTwoStateController(const ControllerHeader header, const CTransitionedState &state1,
             const CTransitionedState &state2);
 
     std::vector<Real> activate(const std::vector<Real> inputs) override;
