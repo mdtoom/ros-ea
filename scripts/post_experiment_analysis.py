@@ -75,12 +75,12 @@ class AverageScoreWriter:
         self.score_saver = ScoreSaver(file_name, scenario_names)
         self.scores_per_scenario = []
 
-    def add_scores(self, scores):
+    def add_scenario_scores(self, scores):
         self.scores_per_scenario.append(scores)
 
     def finalize(self, entry_name='w'):
 
-        avg_scores = [sum(scores) / len(scores) for scores in self.scores_per_scenario]
+        avg_scores = [float(sum(scores)) / len(scores) for scores in self.scores_per_scenario]
         avg_fitness = sum(avg_scores) / len(avg_scores)
         avg_scores.append(avg_fitness)
         score_dict = {entry_name: avg_scores}
@@ -134,7 +134,7 @@ class PostExperimentAnalysis(GenomeAnalysisTool):
                     state_writer.append_states(sc.namespace, genome, state_list)
 
             scenario_visualizer.finalize()
-            avg_score_writer.add_scores(scenario_scores)
+            avg_score_writer.add_scenario_scores(scenario_scores)
 
             if not isinstance(self.encoder, NEATROSEncoder):
                 state_vizualizer.finalize()
