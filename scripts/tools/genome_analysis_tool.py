@@ -1,6 +1,5 @@
 import glob
 import pickle
-import rospy
 
 
 def gather_winner_genomes(base_dir):

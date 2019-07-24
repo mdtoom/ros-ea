@@ -1,9 +1,10 @@
 import csv
-import struct
 
 import rospy
 from ma_evolution.msg import SimulationReport
 from neat.six_util import iteritems
+
+from tools.helper_functions import create_file
 
 
 class StatesGatherer:
@@ -16,9 +17,7 @@ class StatesGatherer:
         self.states_file = base_dir + "sim_report_{0}.csv".format(stripped_ns)
         rospy.Subscriber(name_space + 'simreport_topic', SimulationReport, self.callback)
 
-        with open(self.states_file, 'w'):
-            pass
-
+        create_file(self.states_file)
         self.received_state_sets = []
 
     def callback(self, data):
@@ -37,7 +36,8 @@ class StatesGatherer:
             state_usage.append(key)
             state_usage.append(value)
 
-        self.received_state_sets.append([data.header.generation, data.header.key, data.score, data.at_light] + state_usage)
+        self.received_state_sets.append([data.header.generation, data.header.key, data.score, data.at_light]
+                                        + state_usage)
 
     def write_generation(self):
 

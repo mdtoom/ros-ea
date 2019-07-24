@@ -16,7 +16,7 @@ from predefined_experiments import sm_based_experiment
 
 
 def run_sm_new():
-    config_location = 'configs/config-sm_state_species'
+    config_location = 'configs/config-sm_three_states'
     num_generations = 100
     num_runs = 5
     base_directory = expanduser("~") + '/Desktop/sm_new/'

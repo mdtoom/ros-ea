@@ -1,6 +1,8 @@
 import csv
 from neat.six_util import iteritems
 
+from helper_functions import create_file
+
 
 class ScoreSaver:
     """ This class receives a set of genomes and their scores and writes it to the given CSV file (append).
@@ -12,6 +14,7 @@ class ScoreSaver:
         self.file_location = file_location
 
         # Write the header to file.
+        create_file(self.file_location)
         with open(self.file_location, 'w') as csvFile:
             writer = csv.writer(csvFile)
             csv_header = ['generation', 'identifier'] + ['score_' + str(ns) for ns in namespaces] + ['final_score']

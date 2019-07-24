@@ -7,7 +7,7 @@ import rospy
 import csv
 
 from message_parsing import SMROSEncoder, NEATROSEncoder, SMSROSEncoder
-from helper_functions import get_available_namespaces
+from tools.helper_functions import get_available_namespaces
 from tools.visualize_states import StateUsageVisualizer
 from tools.score_saver import ScoreSaver
 from tools.scenario_visualizers import draw_trajectory

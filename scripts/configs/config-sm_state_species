@@ -25,11 +25,6 @@ bias_mutate_power       = 0.5
 bias_mutate_rate        = 0.7
 bias_replace_rate       = 0.1
 
-# connection add/remove rates
-### No states are added or removed.
-state_add_prob           = 0.05
-state_delete_prob        = 0.05
-
 # connection enable options
 enabled_default         = True
 enabled_mutate_rate     = 0.01
@@ -40,15 +35,10 @@ or_comparison_mutate_rate = 0.0
 feed_forward            = True
 initial_connection      = full
 
-# transition add/remove rates
-transition_add_prob     = 0.05
-transition_delete_prob  = 0.05
-
 # network parameters
 num_initial_states      = 5
 num_inputs              = 24
 num_outputs             = 2
-max_num_states          = 5
 
 # connection weight options
 weight_init_mean        = 0.0

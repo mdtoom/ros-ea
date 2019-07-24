@@ -7,7 +7,7 @@ import rospy
 from examples.experiment_template import SingleExperiment
 
 from post_experiment_analysis import PostExperimentAnalysis
-from helper_functions import get_available_namespaces
+from tools.helper_functions import get_available_namespaces
 from state_gatherer import StatesGatherer
 from simulation_control import SimulationCommunicator
 from tools.score_saver import ScoreSaver
