@@ -20,6 +20,7 @@ add_library(genome_runner_loop_functions SHARED
         genome_runner_loop_function.h genome_runner_loop_function.cpp
         light_random_init_runner.cpp light_random_init_runner.h
         random_obstacles_loop_function.h random_obstacles_loop_function.cpp
+        come_and_go_loop_function.h come_and_go_loop_function.cpp
         genome_receiver.h
         message_decoder.h message_decoder.cpp
         )
