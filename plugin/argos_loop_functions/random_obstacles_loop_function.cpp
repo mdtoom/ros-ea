@@ -8,6 +8,7 @@
 #include <string>
 #include <argos3/plugins/simulator/entities/box_entity.h>
 #include <argos3/core/utility/math/quaternion.h>
+#include <time.h>
 
 #define  NUM_BLOCKS 4
 
@@ -16,6 +17,11 @@ using namespace argos;
 void CRandomObstaclesLoopFunction::Init(TConfigurationNode &t_node)
 {
     CGenomeRunnerLoopFunction::Init(t_node);
+
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    CRandom::CreateCategory("Obstacles", (time_t)ts.tv_nsec);
+    m_pcObstacleRNG = CRandom::CreateRNG("Obstacles");
 
     // Store the start_locations.
     for (int i = 0; i < NUM_BLOCKS; i++)
@@ -39,7 +45,7 @@ void CRandomObstaclesLoopFunction::Reset()
     {
         CBoxEntity& cBox = dynamic_cast<CBoxEntity&>(GetSpace().GetEntity("obstacle" + std::to_string(i)));
 
-        Real y_offset = m_pcRNG->Uniform(CRange<Real>(-1.0, 1.0));
+        Real y_offset = m_pcObstacleRNG->Uniform(CRange<Real>(-1.0, 1.0));
 
         // Move the light entity to the wanted position
         cBox.GetEmbodiedEntity().MoveTo(CVector3(m_vObstacleLocations[i][0], m_vObstacleLocations[i][1] + y_offset,

@@ -24,6 +24,8 @@ private:
 
     /** This vector stores the initial vector locations. */
     std::vector<CVector3> m_vObstacleLocations;
+
+    CRandom::CRNG* m_pcObstacleRNG;
 };
 
 
