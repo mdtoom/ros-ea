@@ -2,6 +2,8 @@
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import Rectangle
 
+import matplotlib
+matplotlib.use('Agg')               # This should be commented out when a visualization is required.
 import matplotlib.pyplot as plt
 
 
@@ -126,16 +128,3 @@ def alt_scenario3(ax):
 
     collection = PatchCollection(patches)
     ax.add_collection(collection)
-
-
-if __name__ == '__main__':
-
-    ax = plt.gca()
-    alt_scenario3(ax)
-
-    plt.axis('scaled')
-    plt.legend()
-    plt.xlim((-0.5, 5.5))
-    plt.ylim((-2.0, 7.0))
-
-    plt.show()

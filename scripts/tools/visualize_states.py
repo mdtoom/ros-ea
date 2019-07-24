@@ -2,6 +2,8 @@
 # Visualization can be the states over time or the states in the environment.
 import csv
 import sys
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
