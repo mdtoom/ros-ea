@@ -25,12 +25,12 @@ def nn_based_experiment(launch_file, config, base_directory, num_generations, nu
 
 
 def ss_based_experiment(launch_file, config, base_directory, num_generations, num_runs,
-                        experiment_class=ROSSimultaneRobotExperiment):
+                        experiment_class=ROSSimultaneRobotExperiment, record_states=False):
     sim_control = SimulationController('ma_evolution', launch_file, 'state-selector')
     sim_control.start_simulators()
     controller_keeper = None
     try:
-        controller_keeper = GenomeEvaluator(SMSROSEncoder(), base_directory)
+        controller_keeper = GenomeEvaluator(SMSROSEncoder(), base_directory, record_states)
         experiment = experiment_class(config, num_generations, controller_keeper, base_directory=base_directory)
         experiment.run_full_experiment(num_runs)
 
@@ -42,12 +42,12 @@ def ss_based_experiment(launch_file, config, base_directory, num_generations, nu
 
 
 def sm_based_experiment(launch_file, config, base_directory, num_generations, num_runs,
-                        experiment_class=ROSSimultaneRobotExperiment, controller_nm='state-machine'):
+                        experiment_class=ROSSimultaneRobotExperiment, record_states=False, controller_nm='state-machine'):
     sim_control = SimulationController('ma_evolution', launch_file, controller_nm)
     sim_control.start_simulators()
     controller_keeper = None
     try:
-        controller_keeper = GenomeEvaluator(SMROSEncoder(), base_directory)
+        controller_keeper = GenomeEvaluator(SMROSEncoder(), base_directory, record_states)
         experiment = experiment_class(config, num_generations, controller_keeper,
                                       base_directory=base_directory, cntrl_draw_func=draw_sm)
         experiment.run_full_experiment(num_runs)
