@@ -61,7 +61,9 @@ class SimulationCommunicator:
 
     def callback(self, data):
         # Put the retrieved score in a list and notify (trough the condition) that a new score has arrived.
-        if self.expected_gen_hash == data.header.gen_hash:  # Ignore messages from a different generation.
+
+        # Ignore messages from a different generation or that have already been received before.
+        if self.expected_gen_hash == data.header.gen_hash and data.header.key not in self.retrieved_scores:
             self.retrieved_scores[data.header.key] = data.score
             self.condition_lock.acquire(True)
             self.condition_lock.notify()

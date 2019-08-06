@@ -27,10 +27,7 @@ class GenomeEvaluator:
         self.sim_controllers = [SimulationCommunicator(ns, genome_encoder.get_message_type(), self.condition_lock)
                                 for ns in name_spaces]
 
-        if gather_states: # Enable objects that gather the states if required.
-            self.state_gatherers = [StatesGatherer(ns, base_dir) for ns in name_spaces]
-        else:
-            self.state_gatherers = []
+        self.state_gatherers = [StatesGatherer(ns, base_dir) for ns in name_spaces if gather_states]
 
         time.sleep(1)  # Sleep is required for initialisation
 
@@ -124,6 +121,10 @@ class ROSRobotExperiment(SingleExperiment):
 
         for sc in self.controllers.sim_controllers:
             sc.reset()
+
+        # also set the state gatherers to this new generation.
+        for sg in self.controllers.state_gatherers:
+            sg.set_current_generation(self.p.generation)
 
     def count_received(self):
         return sum(len(sc.retrieved_scores) for sc in self.controllers.sim_controllers)
