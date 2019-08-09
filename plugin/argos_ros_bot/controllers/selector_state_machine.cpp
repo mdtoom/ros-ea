@@ -15,7 +15,7 @@ int CSelectorState::next_state(const std::vector <Real> inputs) {
 
     // Find the maximal score and return its index.
     int max_index = 0;
-    int max_value = -1; // -1 is valid starting value because of tanh function
+    Real max_value = -1; // -1 is valid starting value because of tanh function
 
     for (int i = 0; i < state_scores.size(); i++)
     {
